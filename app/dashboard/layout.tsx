@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   // Next this must run per-request, not during a prerender attempt.
   await connection();
   const session = await auth();
-  if (!session) {
+  if (!session || session.user.kind !== 'candidate') {
     redirect('/login');
   }
 

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { connection } from 'next/server';
 import { auth, signOut } from '@/auth';
-import { Brand } from '../components/brand';
+import { Brand } from '../../components/brand';
 
 // Route-level opt-out of static prerendering (this layout reads the
 // session on every request to gate /recruiter/*).

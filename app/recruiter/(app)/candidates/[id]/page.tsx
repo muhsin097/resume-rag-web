@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
-import { TYPE_BADGE_CLASSES } from '../../../dashboard/profile/type-colors';
+import { TYPE_BADGE_CLASSES } from '../../../../dashboard/profile/type-colors';
 
 export const instant = false;
 

@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Brand } from '../../components/brand';
+import { Brand } from '../../../components/brand';
 
 export default function RecruiterRegisterPage() {
   const router = useRouter();

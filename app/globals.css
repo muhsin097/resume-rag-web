@@ -1,18 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f3ff;
-  --background-2: #fff1f7;
-  --foreground: #211b3b;
+  --background: #ffffff;
+  --foreground: #18181b;
   --surface: #ffffff;
-  --surface-muted: #f6f4ff;
-  --border-color: #e6e1fb;
-  --muted: #6b6490;
+  --surface-muted: #fafafa;
+  --border-color: #e4e4e7;
+  --muted: #71717a;
   --accent: #6d28d9;
   --accent-hover: #5b21b6;
-  --accent-2: #ec4899;
   --accent-foreground: #ffffff;
-  --accent-soft: #ede9fe;
+  --accent-soft: #f3effc;
 }
 
 @theme inline {
@@ -23,7 +21,6 @@
   --color-border-color: var(--border-color);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
-  --color-accent-2: var(--accent-2);
   --color-accent-foreground: var(--accent-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -31,43 +28,35 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #15102b;
-    --background-2: #1e1333;
-    --foreground: #f2effa;
-    --surface: #1d1736;
-    --surface-muted: #241b43;
-    --border-color: #352a5c;
-    --muted: #b3a9d6;
+    --background: #0a0a0b;
+    --foreground: #fafafa;
+    --surface: #111113;
+    --surface-muted: #18181b;
+    --border-color: #27272a;
+    --muted: #a1a1aa;
     --accent: #a78bfa;
     --accent-hover: #c4b5fd;
-    --accent-2: #f472b6;
     --accent-foreground: #15102b;
-    --accent-soft: rgba(167, 139, 250, 0.18);
+    --accent-soft: rgba(167, 139, 250, 0.14);
   }
 }
 
 body {
-  background: linear-gradient(
-    135deg,
-    var(--background) 0%,
-    var(--background-2) 100%
-  );
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
   min-height: 100vh;
 }
 
 @layer components {
   .card {
-    border-radius: 1.1rem;
+    border-radius: 0.85rem;
     border: 1px solid var(--border-color);
     background: var(--surface);
     padding: 1.25rem;
-    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.06);
   }
 
   .card-muted {
-    border-radius: 0.85rem;
+    border-radius: 0.65rem;
     border: 1px solid var(--border-color);
     background: var(--surface-muted);
     padding: 1rem;
@@ -77,18 +66,17 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 9999px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 0.5rem;
+    background: var(--accent);
     color: var(--accent-foreground);
     padding: 0.55rem 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: opacity 0.15s ease, transform 0.1s ease;
+    transition: background-color 0.15s ease;
     white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
   }
   .btn-primary:hover {
-    opacity: 0.92;
+    background: var(--accent-hover);
   }
   .btn-primary:disabled {
     opacity: 0.5;
@@ -99,7 +87,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 9999px;
+    border-radius: 0.5rem;
     border: 1px solid var(--border-color);
     background: var(--surface);
     color: var(--foreground);
@@ -115,7 +103,7 @@ body {
   .btn-ghost {
     display: inline-flex;
     align-items: center;
-    border-radius: 9999px;
+    border-radius: 0.5rem;
     color: var(--muted);
     padding: 0.4rem 0.9rem;
     font-size: 0.875rem;
@@ -128,7 +116,7 @@ body {
 
   .input {
     width: 100%;
-    border-radius: 0.65rem;
+    border-radius: 0.5rem;
     border: 1px solid var(--border-color);
     background: var(--surface);
     padding: 0.5rem 0.75rem;
@@ -157,7 +145,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    border-radius: 9999px;
+    border-radius: 0.4rem;
     border: 1px solid var(--border-color);
     background: var(--surface);
     padding: 0.3rem 0.8rem;

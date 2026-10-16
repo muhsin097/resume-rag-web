@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { connection } from 'next/server';
@@ -7,6 +8,12 @@ import { Brand } from '../components/brand';
 // Route-level opt-out of static prerendering (this layout reads the
 // session on every request to gate /dashboard/*).
 export const instant = false;
+
+// Signed-in-only pages have nothing for a crawler to usefully index, and
+// shouldn't show up in search results pointing at someone's private data.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardLayout({
   children,

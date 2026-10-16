@@ -1,27 +1,24 @@
+import Image from 'next/image';
+
+// Real logo asset is a 3:1 wordmark (2172x724) -- sizes below keep that
+// ratio so it never stretches/squashes at any size the app uses it at.
 const SIZES = {
-  sm: { icon: 20, text: 'text-sm' },
-  md: { icon: 24, text: 'text-lg' },
-  lg: { icon: 34, text: 'text-2xl' },
+  sm: { height: 40, width: 120 },
+  md: { height: 52, width: 156 },
+  lg: { height: 92, width: 276 },
 } as const;
 
 export function Brand({ size = 'md' }: { size?: keyof typeof SIZES }) {
-  const { icon, text } = SIZES[size];
+  const { height, width } = SIZES[size];
 
   return (
-    <span className="inline-flex items-center gap-2">
-      <svg width={icon} height={icon} viewBox="0 0 24 24" fill="none" className="flex-none">
-        <rect x="1" y="1" width="22" height="22" rx="7" fill="var(--accent)" opacity="0.12" />
-        <path
-          d="M7.5 12.6l2.8 2.8L16.6 9"
-          stroke="var(--accent)"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className={`${text} font-semibold tracking-tight`} style={{ color: 'var(--accent)' }}>
-        Cease to Resume
-      </span>
-    </span>
+    <Image
+      src="/logo-full.png"
+      alt="Cease to Resume"
+      width={width}
+      height={height}
+      priority
+      className="flex-none"
+    />
   );
 }

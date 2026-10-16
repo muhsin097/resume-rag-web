@@ -1,5 +1,24 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
+
+// Both Google providers below exchange a verified Google identity for our
+// own JWT via this same backend call -- the only difference is which
+// Nest endpoint (and therefore which persona's table) it hits.
+async function exchangeGoogleProfileForToken(
+  endpoint: '/auth/oauth' | '/recruiter-auth/oauth',
+  profile: { email?: string | null; name?: string | null },
+) {
+  const response = await fetch(`${process.env.RESUME_API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: profile.email, name: profile.name }),
+  });
+  if (!response.ok) {
+    throw new Error('Could not complete Google sign-in.');
+  }
+  return response.json();
+}
 
 // NextAuth never talks to a database here -- it delegates credential
 // checking entirely to the NestJS API, which owns the User table and the
@@ -68,6 +87,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         const data = await response.json();
+        return {
+          id: data.recruiter.id,
+          email: data.recruiter.email,
+          name: data.recruiter.name,
+          accessToken: data.accessToken,
+          kind: 'recruiter',
+        };
+      },
+    }),
+    Google({
+      id: 'google-candidate',
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile: async (profile) => {
+        const data = await exchangeGoogleProfileForToken('/auth/oauth', profile);
+        return {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          accessToken: data.accessToken,
+          kind: 'candidate',
+        };
+      },
+    }),
+    Google({
+      id: 'google-recruiter',
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile: async (profile) => {
+        const data = await exchangeGoogleProfileForToken('/recruiter-auth/oauth', profile);
         return {
           id: data.recruiter.id,
           email: data.recruiter.email,

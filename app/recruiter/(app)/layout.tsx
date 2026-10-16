@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { connection } from 'next/server';
@@ -7,6 +8,12 @@ import { Brand } from '../../components/brand';
 // Route-level opt-out of static prerendering (this layout reads the
 // session on every request to gate /recruiter/*).
 export const instant = false;
+
+// Candidate search/profile views are behind a recruiter login and show
+// other people's data -- never index them.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function RecruiterLayout({
   children,

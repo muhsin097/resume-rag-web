@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Brand } from '../components/brand';
+import { GoogleButton } from '../components/google-button';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -93,6 +94,14 @@ export default function RegisterPage() {
           >
             {submitting ? 'Creating account...' : 'Create account'}
           </button>
+
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1" style={{ background: 'var(--border-color)' }} />
+            <span className="text-xs muted">or</span>
+            <span className="h-px flex-1" style={{ background: 'var(--border-color)' }} />
+          </div>
+
+          <GoogleButton provider="google-candidate" callbackUrl="/dashboard/profile" />
 
           <p className="text-sm muted">
             Already have an account?{' '}

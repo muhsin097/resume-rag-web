@@ -13,6 +13,7 @@ export interface ResumeSection {
 
 export interface StructuredResume {
   name: string;
+  title: string | null;
   contactLine: string;
   summary: string | null;
   sections: ResumeSection[];

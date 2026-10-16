@@ -8,6 +8,11 @@ export function ResumePreview({ resume }: { resume: StructuredResume }) {
     <div className="space-y-3 text-sm">
       <div>
         <p className="font-semibold">{resume.name}</p>
+        {resume.title && (
+          <p className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
+            {resume.title}
+          </p>
+        )}
         <p className="muted text-xs">{resume.contactLine}</p>
       </div>
       {resume.summary && <p>{resume.summary}</p>}

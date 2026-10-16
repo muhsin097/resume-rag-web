@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { generateResume } from './actions';
 import { highlightKeywords } from './highlight-keywords';
+import { ResumePreview } from '../resume-preview';
 
 function scoreColorClass(score: number): string {
   if (score >= 80) {
@@ -85,19 +86,41 @@ export function GenerateForm() {
             <div className="card">
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="font-semibold">Tailored resume</h2>
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigator.clipboard.writeText(generation.generatedContent)
-                  }
-                  className="link text-sm"
-                >
-                  Copy
-                </button>
+                <div className="flex items-center gap-3 text-sm">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigator.clipboard.writeText(generation.generatedContent)
+                    }
+                    className="link"
+                  >
+                    Copy
+                  </button>
+                  {generation.structuredContent && (
+                    <>
+                      <a
+                        href={`/api/resume-export/${generation.id}?format=docx`}
+                        className="link"
+                      >
+                        DOCX
+                      </a>
+                      <a
+                        href={`/api/resume-export/${generation.id}?format=pdf`}
+                        className="link"
+                      >
+                        PDF
+                      </a>
+                    </>
+                  )}
+                </div>
               </div>
-              <pre className="whitespace-pre-wrap font-sans text-sm">
-                {generation.generatedContent}
-              </pre>
+              {generation.structuredContent ? (
+                <ResumePreview resume={generation.structuredContent} />
+              ) : (
+                <pre className="whitespace-pre-wrap font-sans text-sm">
+                  {generation.generatedContent}
+                </pre>
+              )}
             </div>
           </div>
         </div>

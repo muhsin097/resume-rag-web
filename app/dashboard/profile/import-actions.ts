@@ -9,7 +9,8 @@ export type ExtractedItemType =
   | 'CERTIFICATION'
   | 'PROJECT'
   | 'ACHIEVEMENT'
-  | 'SKILL';
+  | 'SKILL'
+  | 'LANGUAGE';
 
 export interface ExtractedItem {
   type: ExtractedItemType;

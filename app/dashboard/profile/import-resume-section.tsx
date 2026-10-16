@@ -25,31 +25,45 @@ export function ImportResumeSection() {
     extractResumeItems,
     {},
   );
-  // Skills are shown as a chip row, not a card per skill. Facts (experience/
-  // education/etc.) get individual cards since those need more fields.
+  // Skills/languages are shown as a chip row, not a card per entry. Facts
+  // (experience/education/etc.) get individual cards since those need more
+  // fields.
   const [facts, setFacts] = useState<ExtractedItem[] | null>(null);
   const [skillsText, setSkillsText] = useState('');
+  const [languagesText, setLanguagesText] = useState('');
   const [contactInfo, setContactInfo] = useState<ExtractedContactInfo>({});
   // Each section shows a clean read-only summary by default; "Edit" toggles
   // it into an editable form. Nothing is saved until "Save to profile".
   const [editingContact, setEditingContact] = useState(false);
   const [editingSkills, setEditingSkills] = useState(false);
+  const [editingLanguages, setEditingLanguages] = useState(false);
   const [editingFacts, setEditingFacts] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (extractState.items) {
-      setFacts(extractState.items.filter((item) => item.type !== 'SKILL'));
+      setFacts(
+        extractState.items.filter(
+          (item) => item.type !== 'SKILL' && item.type !== 'LANGUAGE',
+        ),
+      );
       setSkillsText(
         extractState.items
           .filter((item) => item.type === 'SKILL')
           .map((item) => item.title)
           .join(', '),
       );
+      setLanguagesText(
+        extractState.items
+          .filter((item) => item.type === 'LANGUAGE')
+          .map((item) => item.title)
+          .join(', '),
+      );
       setContactInfo(extractState.contactInfo ?? {});
       setEditingContact(false);
       setEditingSkills(false);
+      setEditingLanguages(false);
       setEditingFacts(false);
     }
   }, [extractState.items, extractState.contactInfo]);
@@ -73,13 +87,22 @@ export function ImportResumeSection() {
     .map((skill) => skill.trim())
     .filter(Boolean);
 
+  const languageChips = languagesText
+    .split(/[,\n]/)
+    .map((language) => language.trim())
+    .filter(Boolean);
+
   async function handleSaveAll() {
     if (!facts) return;
     const skillItems: ExtractedItem[] = skillChips.map((title) => ({
       type: 'SKILL',
       title,
     }));
-    const allItems = [...facts, ...skillItems];
+    const languageItems: ExtractedItem[] = languageChips.map((title) => ({
+      type: 'LANGUAGE',
+      title,
+    }));
+    const allItems = [...facts, ...skillItems, ...languageItems];
     const hasContact =
       contactInfo.phone || contactInfo.location || contactInfo.bio;
     if (allItems.length === 0 && !hasContact) return;
@@ -90,6 +113,7 @@ export function ImportResumeSection() {
       await saveExtractedResume(allItems, contactInfo);
       setFacts(null);
       setSkillsText('');
+      setLanguagesText('');
       setContactInfo({});
       router.refresh();
     } catch (err) {
@@ -229,6 +253,42 @@ export function ImportResumeSection() {
                     className={`chip ${TYPE_BADGE_CLASSES.SKILL} border-0 text-xs`}
                   >
                     {skill}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm muted">Nothing found.</p>
+            )}
+          </div>
+
+          {/* Languages */}
+          <div className="card-muted">
+            <div className="mb-1 flex items-center justify-between">
+              <p className="text-sm font-medium">Languages</p>
+              <button
+                type="button"
+                onClick={() => setEditingLanguages((v) => !v)}
+                className="link text-xs"
+              >
+                {editingLanguages ? 'Done' : 'Edit'}
+              </button>
+            </div>
+            {editingLanguages ? (
+              <textarea
+                value={languagesText}
+                onChange={(e) => setLanguagesText(e.target.value)}
+                rows={2}
+                placeholder="English (Native), Spanish (Fluent)"
+                className="input"
+              />
+            ) : languageChips.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {languageChips.map((language) => (
+                  <span
+                    key={language}
+                    className={`chip ${TYPE_BADGE_CLASSES.LANGUAGE} border-0 text-xs`}
+                  >
+                    {language}
                   </span>
                 ))}
               </div>

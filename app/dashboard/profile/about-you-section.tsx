@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { updateContactInfo } from './actions';
 
 interface Me {
+  name: string;
   phone: string | null;
   location: string | null;
   bio: string | null;
 }
 
-// Bio/phone/location are each a single value, not a list -- so this is
+// Bio/phone/location/name are each a single value, not a list -- so this is
 // display-then-edit (one value, one form, toggled), not an ever-present
 // form. Once there's data, show it as plain text with an Edit affordance.
 export function AboutYouSection({ me }: { me: Me }) {
@@ -30,6 +31,7 @@ export function AboutYouSection({ me }: { me: Me }) {
           </button>
         </div>
         <div className="card space-y-1 text-sm">
+          <p className="font-medium">{me.name}</p>
           {(me.location || me.phone) && (
             <p className="muted">
               {[me.location, me.phone].filter(Boolean).join(' · ')}
@@ -51,6 +53,13 @@ export function AboutYouSection({ me }: { me: Me }) {
         }}
         className="card grid grid-cols-2 gap-3"
       >
+        <input
+          name="name"
+          defaultValue={me.name}
+          placeholder="Full name"
+          required
+          className="input col-span-2"
+        />
         <input
           name="phone"
           defaultValue={me.phone ?? ''}

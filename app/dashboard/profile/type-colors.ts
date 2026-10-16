@@ -7,6 +7,7 @@ export const TYPE_BADGE_CLASSES: Record<string, string> = {
   PROJECT: 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-200',
   ACHIEVEMENT: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
   SKILL: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/50 dark:text-fuchsia-200',
+  LANGUAGE: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-200',
 };
 
 export const TYPE_BORDER_CLASSES: Record<string, string> = {
@@ -16,4 +17,5 @@ export const TYPE_BORDER_CLASSES: Record<string, string> = {
   PROJECT: 'border-l-4 border-l-rose-400 dark:border-l-rose-500',
   ACHIEVEMENT: 'border-l-4 border-l-emerald-400 dark:border-l-emerald-500',
   SKILL: 'border-l-4 border-l-fuchsia-400 dark:border-l-fuchsia-500',
+  LANGUAGE: 'border-l-4 border-l-cyan-400 dark:border-l-cyan-500',
 };

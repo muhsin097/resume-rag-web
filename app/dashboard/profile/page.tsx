@@ -2,7 +2,7 @@ import { apiFetch } from '@/lib/api';
 import { deleteExperienceItem, setJobSearchEnabled } from './actions';
 import { ImportResumeSection } from './import-resume-section';
 import { AddExperienceItemForm } from './add-experience-item-form';
-import { AddSkillsForm } from './add-skills-form';
+import { AddTagListForm } from './add-tag-list-form';
 import { AboutYouSection } from './about-you-section';
 import { CollapsibleSection } from './collapsible-section';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
@@ -15,7 +15,8 @@ type ExperienceType =
   | 'CERTIFICATION'
   | 'PROJECT'
   | 'ACHIEVEMENT'
-  | 'SKILL';
+  | 'SKILL'
+  | 'LANGUAGE';
 
 interface ExperienceItem {
   id: string;
@@ -51,6 +52,51 @@ const SIDE_GROUPS: { label: string; type: ExperienceType }[] = [
 ];
 
 const FREE_GENERATIONS_LIMIT = 5;
+
+// Shared by Skills and Languages -- both are short, tag-like facts shown
+// as a chip row rather than a card per entry.
+function TagSection({
+  type,
+  label,
+  placeholder,
+  items,
+}: {
+  type: 'SKILL' | 'LANGUAGE';
+  label: string;
+  placeholder: string;
+  items: ExperienceItem[];
+}) {
+  return (
+    <section className="space-y-3">
+      <CollapsibleSection label={label} addLabel="+ Add">
+        <AddTagListForm type={type} label={label} placeholder={placeholder} />
+      </CollapsibleSection>
+      {items.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {items.map((item) => (
+            <span
+              key={item.id}
+              className={`chip ${TYPE_BADGE_CLASSES[type]} border-0`}
+            >
+              {item.title}
+              <form action={deleteExperienceItem.bind(null, item.id)}>
+                <button
+                  type="submit"
+                  className="opacity-60 hover:opacity-100"
+                  aria-label={`Remove ${item.title}`}
+                >
+                  ×
+                </button>
+              </form>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm muted">No {label.toLowerCase()} yet.</p>
+      )}
+    </section>
+  );
+}
 
 function ItemCard({
   item,
@@ -98,6 +144,7 @@ export default async function ProfilePage() {
   })).filter((group) => group.items.length > 0);
 
   const skills = items.filter((item) => item.type === 'SKILL');
+  const languages = items.filter((item) => item.type === 'LANGUAGE');
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -154,36 +201,21 @@ export default async function ProfilePage() {
           )}
         </div>
 
-        {/* Side column: skills, certifications, achievements */}
+        {/* Side column: skills, languages, certifications, achievements */}
         <div className="space-y-6">
-          <section className="space-y-3">
-            <CollapsibleSection label="Skills" addLabel="+ Add">
-              <AddSkillsForm />
-            </CollapsibleSection>
-            {skills.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {skills.map((item) => (
-                  <span
-                    key={item.id}
-                    className={`chip ${TYPE_BADGE_CLASSES.SKILL} border-0`}
-                  >
-                    {item.title}
-                    <form action={deleteExperienceItem.bind(null, item.id)}>
-                      <button
-                        type="submit"
-                        className="opacity-60 hover:opacity-100"
-                        aria-label={`Remove ${item.title}`}
-                      >
-                        ×
-                      </button>
-                    </form>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm muted">No skills yet.</p>
-            )}
-          </section>
+          <TagSection
+            type="SKILL"
+            label="Skills"
+            placeholder="Kubernetes, AWS, Terraform, Node.js, TypeScript"
+            items={skills}
+          />
+
+          <TagSection
+            type="LANGUAGE"
+            label="Languages"
+            placeholder="English (Native), Spanish (Fluent)"
+            items={languages}
+          />
 
           {sideGroups.map((group) => (
             <section key={group.label} className="space-y-2">

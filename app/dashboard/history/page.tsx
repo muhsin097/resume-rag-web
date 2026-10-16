@@ -1,4 +1,7 @@
 import { apiFetch } from '@/lib/api';
+import { RegenerateButton } from './regenerate-button';
+import { ResumePreview } from '../resume-preview';
+import type { StructuredResume } from '../generate/actions';
 
 export const instant = false;
 
@@ -6,6 +9,7 @@ interface ResumeGeneration {
   id: string;
   jobDescription: string;
   generatedContent: string;
+  structuredContent: StructuredResume | null;
   matchScore: number;
   createdAt: string;
 }
@@ -49,9 +53,34 @@ export default async function HistoryPage() {
               {generation.jobDescription.length > 80 ? '...' : ''}
             </span>
           </summary>
-          <pre className="mt-3 whitespace-pre-wrap font-sans text-sm">
-            {generation.generatedContent}
-          </pre>
+          <div className="mt-2 flex items-center gap-3">
+            <RegenerateButton jobDescription={generation.jobDescription} />
+            {generation.structuredContent && (
+              <>
+                <a
+                  href={`/api/resume-export/${generation.id}?format=docx`}
+                  className="link text-xs"
+                >
+                  Download DOCX
+                </a>
+                <a
+                  href={`/api/resume-export/${generation.id}?format=pdf`}
+                  className="link text-xs"
+                >
+                  Download PDF
+                </a>
+              </>
+            )}
+          </div>
+          {generation.structuredContent ? (
+            <div className="mt-3">
+              <ResumePreview resume={generation.structuredContent} />
+            </div>
+          ) : (
+            <pre className="mt-3 whitespace-pre-wrap font-sans text-sm">
+              {generation.generatedContent}
+            </pre>
+          )}
         </details>
       ))}
     </div>

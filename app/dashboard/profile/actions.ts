@@ -30,22 +30,22 @@ export async function createExperienceItem(formData: FormData) {
   revalidatePath('/dashboard/profile');
 }
 
-// Skills are one-word facts with no description/org/dates -- let the user
-// drop in a whole batch at once instead of repeating the full form per
-// skill. Goes through /experience-items/bulk (one batched Voyage call for
-// all of them) rather than looping individual POSTs, which would hit
-// Voyage's free-tier 3-requests/minute cap after the first couple of skills.
-export async function addSkills(skills: string[]) {
+// Skills/languages are one-word(ish) facts with no description/org/dates --
+// let the user drop in a whole batch at once instead of repeating the full
+// form per entry. Goes through /experience-items/bulk (one batched Voyage
+// call for all of them) rather than looping individual POSTs, which would
+// hit Voyage's free-tier 3-requests/minute cap after the first couple.
+export async function addTagItems(type: 'SKILL' | 'LANGUAGE', titles: string[]) {
   const response = await apiFetch('/experience-items/bulk', {
     method: 'POST',
     body: JSON.stringify({
-      items: skills.map((title) => ({ type: 'SKILL', title })),
+      items: titles.map((title) => ({ type, title })),
     }),
   });
 
   if (!response.ok) {
     const data = await response.json().catch(() => null);
-    throw new Error(data?.message ?? 'Could not save the skills.');
+    throw new Error(data?.message ?? 'Could not save.');
   }
 
   revalidatePath('/dashboard/profile');
@@ -65,9 +65,11 @@ export async function deleteExperienceItem(id: string) {
 
 export async function updateContactInfo(formData: FormData) {
   const payload: Record<string, string> = {};
+  const name = formData.get('name');
   const phone = formData.get('phone');
   const location = formData.get('location');
   const bio = formData.get('bio');
+  if (name !== null) payload.name = String(name);
   if (phone !== null) payload.phone = String(phone);
   if (location !== null) payload.location = String(location);
   if (bio !== null) payload.bio = String(bio);

@@ -2,12 +2,29 @@
 
 import { apiFetch } from '@/lib/api';
 
+export interface ResumeSection {
+  heading: string;
+  items: {
+    title: string;
+    subtitle: string | null;
+    bullets: string[];
+  }[];
+}
+
+export interface StructuredResume {
+  name: string;
+  contactLine: string;
+  summary: string | null;
+  sections: ResumeSection[];
+}
+
 export interface GenerateResumeState {
   error?: string;
   generation?: {
     id: string;
     jobDescription: string;
     generatedContent: string;
+    structuredContent: StructuredResume | null;
     matchScore: number;
     matchedKeywords: string[];
     missingKeywords: string[];

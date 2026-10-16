@@ -153,7 +153,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
       />
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
+      <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-y-2 px-4 py-5 sm:px-6">
         <Brand size="sm" />
         <nav className="flex items-center gap-2 text-sm">
           <Link href="/login" className="btn-ghost">

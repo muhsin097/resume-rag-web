@@ -31,24 +31,24 @@ export default async function DashboardLayout({
   return (
     <div className="flex flex-1 flex-col">
       <header
-        className="flex items-center justify-between px-6 py-3"
+        className="flex flex-wrap items-center justify-between gap-y-2 px-4 py-3 sm:px-6"
         style={{
           borderBottom: '1px solid var(--border-color)',
           background: 'var(--surface)',
         }}
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <Link href="/dashboard/profile">
             <Brand size="sm" />
           </Link>
-          <nav className="flex gap-1 text-sm">
-            <Link href="/dashboard/profile" className="btn-ghost">
+          <nav className="flex gap-0.5 text-sm sm:gap-1">
+            <Link href="/dashboard/profile" className="btn-ghost px-2 sm:px-3.5">
               Profile
             </Link>
-            <Link href="/dashboard/generate" className="btn-ghost">
+            <Link href="/dashboard/generate" className="btn-ghost px-2 sm:px-3.5">
               Generate
             </Link>
-            <Link href="/dashboard/history" className="btn-ghost">
+            <Link href="/dashboard/history" className="btn-ghost px-2 sm:px-3.5">
               History
             </Link>
           </nav>
@@ -60,12 +60,12 @@ export default async function DashboardLayout({
           }}
         >
           <button type="submit" className="btn-ghost">
-            Sign out ({session.user?.email})
+            Sign out<span className="hidden sm:inline"> ({session.user?.email})</span>
           </button>
         </form>
       </header>
       <main
-        className="flex-1 p-6"
+        className="flex-1 p-4 sm:p-6"
         style={{ background: 'var(--background)' }}
       >
         {children}

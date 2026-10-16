@@ -31,18 +31,18 @@ export default async function RecruiterLayout({
   return (
     <div className="flex flex-1 flex-col">
       <header
-        className="flex items-center justify-between px-6 py-3"
+        className="flex flex-wrap items-center justify-between gap-y-2 px-4 py-3 sm:px-6"
         style={{
           borderBottom: '1px solid var(--border-color)',
           background: 'var(--surface)',
         }}
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <Link href="/recruiter/search">
             <Brand size="sm" />
           </Link>
           <nav className="flex gap-1 text-sm">
-            <Link href="/recruiter/search" className="btn-ghost">
+            <Link href="/recruiter/search" className="btn-ghost px-2 sm:px-3.5">
               Search
             </Link>
           </nav>
@@ -54,12 +54,12 @@ export default async function RecruiterLayout({
           }}
         >
           <button type="submit" className="btn-ghost">
-            Sign out ({session.user?.email})
+            Sign out<span className="hidden sm:inline"> ({session.user?.email})</span>
           </button>
         </form>
       </header>
       <main
-        className="flex-1 p-6"
+        className="flex-1 p-4 sm:p-6"
         style={{ background: 'var(--background)' }}
       >
         {children}

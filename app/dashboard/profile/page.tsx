@@ -148,9 +148,9 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <section className="card flex items-center justify-between">
-        <div>
-          <p className="font-medium">
+      <section className="card flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-medium break-words">
             {me.name} &middot; {me.email}
           </p>
           <p className="text-sm muted">

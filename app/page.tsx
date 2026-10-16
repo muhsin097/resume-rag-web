@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { auth } from '@/auth';
 import { Brand } from './components/brand';
+import { HeroIllustration } from './components/hero-illustration';
+import { StatsCounter } from './components/stats-counter';
 
 export const instant = false;
 
@@ -163,23 +165,35 @@ export default async function Home() {
         </nav>
       </header>
 
-      <section className="mx-auto max-w-3xl px-6 pt-12 pb-16 text-center sm:pt-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Your resume shouldn&apos;t say the same thing to every job.
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base muted sm:text-lg">
-          Generic resumes get filtered out before a human ever sees them, and
-          tailoring every application by hand takes hours you don&apos;t have.
-          Cease to Resume builds a tailored version from your{' '}
-          <em>real</em> experience, in seconds.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/register" className="btn-primary px-6 py-2.5 text-base">
-            Try for free
-          </Link>
-          <Link href="/login" className="btn-secondary px-6 py-2.5 text-base">
-            Log in
-          </Link>
+      <section className="relative mx-auto max-w-6xl overflow-hidden px-6 pt-12 pb-16 sm:pt-20">
+        <div className="relative z-10 max-w-xl text-center sm:text-left">
+          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
+            Your resume shouldn&apos;t say the same thing to every job.
+          </h1>
+          <p className="mt-4 text-base muted sm:text-lg">
+            Generic resumes get filtered out before a human ever sees them, and
+            tailoring every application by hand takes hours you don&apos;t have.
+            Cease to Resume builds a tailored version from your{' '}
+            <em>real</em> experience, in seconds.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+            <Link href="/register" className="btn-primary px-6 py-2.5 text-base">
+              Try for free
+            </Link>
+            <Link href="/login" className="btn-secondary px-6 py-2.5 text-base">
+              Log in
+            </Link>
+          </div>
+          <div className="mt-12">
+            <StatsCounter />
+          </div>
+        </div>
+
+        <div
+          className="pointer-events-none absolute top-1/2 right-[-40px] hidden h-[420px] w-[420px] -translate-y-1/2 lg:block"
+          aria-hidden="true"
+        >
+          <HeroIllustration />
         </div>
       </section>
 

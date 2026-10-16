@@ -18,7 +18,7 @@ export default async function DashboardLayout({
   await connection();
   const session = await auth();
   if (!session || session.user.kind !== 'candidate') {
-    redirect('/login');
+    redirect('/');
   }
 
   return (
@@ -49,7 +49,7 @@ export default async function DashboardLayout({
         <form
           action={async () => {
             'use server';
-            await signOut({ redirectTo: '/login' });
+            await signOut({ redirectTo: '/' });
           }}
         >
           <button type="submit" className="btn-ghost">

@@ -1,4 +1,5 @@
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { ApiDownMessage } from '../../components/api-down';
 import { GenerateForm } from './generate-form';
 
 export const instant = false;
@@ -6,7 +7,13 @@ export const instant = false;
 const FREE_GENERATIONS_LIMIT = 5;
 
 export default async function GeneratePage() {
-  const meRes = await apiFetch('/users/me');
+  let meRes;
+  try {
+    meRes = await apiFetch('/users/me');
+  } catch (err) {
+    if (isApiUnavailable(err)) return <ApiDownMessage />;
+    throw err;
+  }
   const me = await meRes.json();
 
   const remaining =

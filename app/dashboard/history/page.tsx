@@ -1,4 +1,5 @@
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { ApiDownMessage } from '../../components/api-down';
 import { RegenerateButton } from './regenerate-button';
 import { ResumePreview } from '../resume-preview';
 import type { StructuredResume } from '../generate/actions';
@@ -25,7 +26,13 @@ function scoreColorClass(score: number): string {
 }
 
 export default async function HistoryPage() {
-  const res = await apiFetch('/resume-generations');
+  let res;
+  try {
+    res = await apiFetch('/resume-generations');
+  } catch (err) {
+    if (isApiUnavailable(err)) return <ApiDownMessage />;
+    throw err;
+  }
   const generations: ResumeGeneration[] = await res.json();
 
   return (

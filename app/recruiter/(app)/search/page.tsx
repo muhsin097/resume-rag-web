@@ -1,10 +1,17 @@
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { ApiDownMessage } from '../../../components/api-down';
 import { SearchForm } from './search-form';
 
 export const instant = false;
 
 export default async function RecruiterSearchPage() {
-  const meRes = await apiFetch('/recruiter/me');
+  let meRes;
+  try {
+    meRes = await apiFetch('/recruiter/me');
+  } catch (err) {
+    if (isApiUnavailable(err)) return <ApiDownMessage />;
+    throw err;
+  }
   const me = await meRes.json();
 
   return (

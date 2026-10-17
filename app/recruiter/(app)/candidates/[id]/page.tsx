@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { ApiDownMessage } from '../../../../components/api-down';
 import { TYPE_BADGE_CLASSES } from '../../../../dashboard/profile/type-colors';
 
 export const instant = false;
@@ -35,7 +36,13 @@ export default async function CandidateProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const res = await apiFetch(`/recruiter/candidates/${id}`);
+  let res;
+  try {
+    res = await apiFetch(`/recruiter/candidates/${id}`);
+  } catch (err) {
+    if (isApiUnavailable(err)) return <ApiDownMessage />;
+    throw err;
+  }
   if (res.status === 404) {
     notFound();
   }

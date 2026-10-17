@@ -17,8 +17,22 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     headers.set('Authorization', `Bearer ${session.accessToken}`);
   }
 
-  return fetch(`${process.env.RESUME_API_BASE_URL}${path}`, {
-    ...init,
-    headers,
-  });
+  try {
+    return await fetch(`${process.env.RESUME_API_BASE_URL}${path}`, {
+      ...init,
+      headers,
+    });
+  } catch {
+    // A thrown fetch (not a 4xx/5xx response) means the API is actually
+    // unreachable -- DNS failure, connection refused, timeout. Thrown with
+    // this exact message; check it with isApiUnavailable() rather than
+    // relying on an app/*/error.tsx boundary -- Next.js redacts the real
+    // error.message in production builds before a boundary ever sees it,
+    // so pages need to catch this themselves to show the friendly message.
+    throw new Error('API_UNAVAILABLE');
+  }
+}
+
+export function isApiUnavailable(error: unknown): boolean {
+  return error instanceof Error && error.message === 'API_UNAVAILABLE';
 }

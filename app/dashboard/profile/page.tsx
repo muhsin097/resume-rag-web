@@ -1,4 +1,5 @@
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { ApiDownMessage } from '../../components/api-down';
 import { deleteExperienceItem, setJobSearchEnabled } from './actions';
 import { ImportResumeSection } from './import-resume-section';
 import { AddExperienceItemForm } from './add-experience-item-form';
@@ -124,10 +125,16 @@ function ItemCard({
 }
 
 export default async function ProfilePage() {
-  const [itemsRes, meRes] = await Promise.all([
-    apiFetch('/experience-items'),
-    apiFetch('/users/me'),
-  ]);
+  let itemsRes, meRes;
+  try {
+    [itemsRes, meRes] = await Promise.all([
+      apiFetch('/experience-items'),
+      apiFetch('/users/me'),
+    ]);
+  } catch (err) {
+    if (isApiUnavailable(err)) return <ApiDownMessage />;
+    throw err;
+  }
   const items: ExperienceItem[] = await itemsRes.json();
   const me: Me = await meRes.json();
 

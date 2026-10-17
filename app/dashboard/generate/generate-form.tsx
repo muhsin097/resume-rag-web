@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { generateResume } from './actions';
 import { highlightKeywords } from './highlight-keywords';
+import { MissingKeywordsPanel, type RequestedSkill } from './missing-keywords-panel';
 import { ResumePreview } from '../resume-preview';
 import { BrandLoader } from '../../components/brand-loader';
 
@@ -19,6 +20,14 @@ function scoreColorClass(score: number): string {
 export function GenerateForm() {
   const [state, formAction, isPending] = useActionState(generateResume, {});
   const generation = state.generation;
+
+  function handleAddKeywords(requestedSkills: RequestedSkill[]) {
+    if (!generation) return;
+    const formData = new FormData();
+    formData.set('jobDescription', generation.jobDescription);
+    formData.set('requestedSkills', JSON.stringify(requestedSkills));
+    formAction(formData);
+  }
 
   return (
     <div className="space-y-6">
@@ -60,16 +69,11 @@ export function GenerateForm() {
                 missing from the resume
               </p>
               {generation.missingKeywords.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {generation.missingKeywords.map((keyword) => (
-                    <span
-                      key={keyword}
-                      className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-900"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
+                <MissingKeywordsPanel
+                  key={generation.id}
+                  missingKeywords={generation.missingKeywords}
+                  onSubmit={handleAddKeywords}
+                />
               )}
             </div>
           </div>

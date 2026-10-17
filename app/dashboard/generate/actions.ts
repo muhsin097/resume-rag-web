@@ -40,10 +40,14 @@ export async function generateResume(
   formData: FormData,
 ): Promise<GenerateResumeState> {
   const jobDescription = String(formData.get('jobDescription') ?? '');
+  const requestedSkillsRaw = formData.get('requestedSkills');
+  const requestedSkills = requestedSkillsRaw
+    ? (JSON.parse(String(requestedSkillsRaw)) as { keyword: string; saveToProfile: boolean }[])
+    : undefined;
 
   const response = await apiFetch('/resume-generations', {
     method: 'POST',
-    body: JSON.stringify({ jobDescription }),
+    body: JSON.stringify({ jobDescription, requestedSkills }),
   });
 
   const data = await response.json();

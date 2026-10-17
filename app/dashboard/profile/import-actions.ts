@@ -12,6 +12,8 @@ export type ExtractedItemType =
   | 'SKILL'
   | 'LANGUAGE';
 
+export type DatePrecision = 'YEAR' | 'MONTH' | 'DAY';
+
 export interface ExtractedItem {
   type: ExtractedItemType;
   title: string;
@@ -19,6 +21,8 @@ export interface ExtractedItem {
   description?: string | null;
   startDate?: string | null;
   endDate?: string | null;
+  startDatePrecision?: DatePrecision | null;
+  endDatePrecision?: DatePrecision | null;
 }
 
 export interface ExtractedContactInfo {
@@ -87,9 +91,11 @@ export async function saveExtractedResume(
       // drop anything that doesn't match rather than fail the whole save.
       if (item.startDate && ISO_DATE.test(item.startDate)) {
         payload.startDate = item.startDate;
+        if (item.startDatePrecision) payload.startDatePrecision = item.startDatePrecision;
       }
       if (item.endDate && ISO_DATE.test(item.endDate)) {
         payload.endDate = item.endDate;
+        if (item.endDatePrecision) payload.endDatePrecision = item.endDatePrecision;
       }
       return payload;
     });

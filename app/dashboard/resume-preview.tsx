@@ -34,10 +34,10 @@ export function ResumePreview({ resume }: { resume: StructuredResume }) {
           {section.items.map((item, index) => (
             <div key={index}>
               {hasOwnItemTitle(item, section) && (
-                <p className="font-medium">
-                  {item.title}
-                  {item.subtitle && <span className="muted"> — {item.subtitle}</span>}
-                </p>
+                <>
+                  <p className="font-medium">{item.title}</p>
+                  {item.subtitle && <p className="muted text-xs">{item.subtitle}</p>}
+                </>
               )}
               {item.bullets.length > 0 && (
                 <ul className="ml-4 list-disc space-y-0.5">

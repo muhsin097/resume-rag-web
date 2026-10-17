@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   extractResumeItems,
   saveExtractedResume,
@@ -40,9 +41,14 @@ export function ImportResumeSection() {
   const [editingFacts, setEditingFacts] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Shown after a successful save instead of just silently clearing the
+  // review UI -- the top nav isn't obvious as "the next step", so point
+  // people at Generate directly.
+  const [justSaved, setJustSaved] = useState(false);
 
   useEffect(() => {
     if (extractState.items) {
+      setJustSaved(false);
       setFacts(
         extractState.items.filter(
           (item) => item.type !== 'SKILL' && item.type !== 'LANGUAGE',
@@ -115,6 +121,7 @@ export function ImportResumeSection() {
       setSkillsText('');
       setLanguagesText('');
       setContactInfo({});
+      setJustSaved(true);
       router.refresh();
     } catch (err) {
       setSaveError(
@@ -395,15 +402,32 @@ export function ImportResumeSection() {
             </div>
           </div>
 
-          {saveError && <p className="text-sm text-red-600">{saveError}</p>}
-          <button
-            type="button"
-            onClick={handleSaveAll}
-            disabled={saving}
-            className="btn-primary"
+          {/* Sticky so this stays reachable while scrolling a long review
+              list -- a save button buried at the bottom of several review
+              cards was easy to miss entirely. */}
+          <div
+            className="sticky bottom-3 z-10 flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3 shadow-sm"
+            style={{ borderColor: 'var(--border-color)', background: 'var(--surface)' }}
           >
-            {saving ? 'Saving...' : 'Save to profile'}
-          </button>
+            <button
+              type="button"
+              onClick={handleSaveAll}
+              disabled={saving}
+              className="btn-primary"
+            >
+              {saving ? 'Saving...' : 'Save to profile'}
+            </button>
+            {saveError && <p className="text-sm text-red-600">{saveError}</p>}
+          </div>
+        </div>
+      )}
+
+      {justSaved && (
+        <div className="card-muted flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-medium">Saved to your profile.</p>
+          <Link href="/dashboard/generate" className="btn-primary">
+            Generate your first tailored resume &rarr;
+          </Link>
         </div>
       )}
     </section>

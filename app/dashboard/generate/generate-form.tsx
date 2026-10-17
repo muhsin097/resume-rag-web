@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 import { generateResume } from './actions';
 import { highlightKeywords } from './highlight-keywords';
 import { ResumePreview } from '../resume-preview';
+import { BrandLoader } from '../../components/brand-loader';
 
 function scoreColorClass(score: number): string {
   if (score >= 80) {
@@ -39,7 +40,9 @@ export function GenerateForm() {
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       </form>
 
-      {generation && (
+      {isPending && <BrandLoader label="Reading your profile and tailoring your resume..." />}
+
+      {!isPending && generation && (
         <div className="space-y-4">
           <div className="card flex flex-wrap items-center gap-4">
             <div

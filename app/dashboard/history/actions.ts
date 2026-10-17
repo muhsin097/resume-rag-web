@@ -5,6 +5,7 @@ import { apiFetch } from '@/lib/api';
 
 export interface RegenerateState {
   error?: string;
+  success?: boolean;
 }
 
 // Same shape as generateResume in dashboard/generate/actions.ts -- this
@@ -29,5 +30,5 @@ export async function regenerateResumeGeneration(
   }
 
   revalidatePath('/dashboard/history');
-  return {};
+  return { success: true };
 }

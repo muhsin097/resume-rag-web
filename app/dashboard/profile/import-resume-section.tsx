@@ -11,6 +11,7 @@ import {
   type ExtractedItemType,
 } from './import-actions';
 import { TYPE_BADGE_CLASSES } from './type-colors';
+import { BrandLoader } from '../../components/brand-loader';
 
 const FACT_TYPES: ExtractedItemType[] = [
   'EXPERIENCE',
@@ -158,6 +159,7 @@ export function ImportResumeSection() {
           {isExtracting ? 'Reading resume...' : 'Extract'}
         </button>
       </form>
+      {isExtracting && <BrandLoader label="Reading your resume..." />}
       {extractState.error && (
         <p className="text-sm text-red-600">{extractState.error}</p>
       )}

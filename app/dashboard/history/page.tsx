@@ -16,12 +16,12 @@ interface ResumeGeneration {
 
 function scoreColorClass(score: number): string {
   if (score >= 80) {
-    return 'bg-green-100 text-green-900 dark:bg-green-900/60 dark:text-green-200';
+    return 'bg-green-100 text-green-900';
   }
   if (score >= 50) {
-    return 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200';
+    return 'bg-amber-100 text-amber-900';
   }
-  return 'bg-red-100 text-red-900 dark:bg-red-900/60 dark:text-red-200';
+  return 'bg-red-100 text-red-900';
 }
 
 export default async function HistoryPage() {

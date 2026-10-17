@@ -6,12 +6,12 @@ import { searchCandidates, findBestFit, type BestFitCandidate } from './actions'
 
 function scoreColorClass(score: number): string {
   if (score >= 80) {
-    return 'bg-green-100 text-green-900 dark:bg-green-900/60 dark:text-green-200';
+    return 'bg-green-100 text-green-900';
   }
   if (score >= 50) {
-    return 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200';
+    return 'bg-amber-100 text-amber-900';
   }
-  return 'bg-red-100 text-red-900 dark:bg-red-900/60 dark:text-red-200';
+  return 'bg-red-100 text-red-900';
 }
 
 export function SearchForm({ initialCreditsRemaining }: { initialCreditsRemaining: number }) {
@@ -133,7 +133,7 @@ export function SearchForm({ initialCreditsRemaining }: { initialCreditsRemainin
                       {candidate.matchedKeywords.map((keyword) => (
                         <span
                           key={keyword}
-                          className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-900 dark:bg-green-900/60 dark:text-green-200"
+                          className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-900"
                         >
                           {keyword}
                         </span>
@@ -141,7 +141,7 @@ export function SearchForm({ initialCreditsRemaining }: { initialCreditsRemainin
                       {candidate.missingKeywords.map((keyword) => (
                         <span
                           key={keyword}
-                          className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-900 dark:bg-red-900/60 dark:text-red-200"
+                          className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-900"
                         >
                           {keyword}
                         </span>

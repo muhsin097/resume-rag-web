@@ -51,9 +51,9 @@ export function highlightKeywords(
 
   const classNames: Record<Mark['variant'], string> = {
     matched:
-      'rounded bg-green-200 px-0.5 text-green-900 dark:bg-green-900/60 dark:text-green-200',
+      'rounded bg-green-200 px-0.5 text-green-900',
     missing:
-      'rounded bg-red-200 px-0.5 text-red-900 dark:bg-red-900/60 dark:text-red-200',
+      'rounded bg-red-200 px-0.5 text-red-900',
   };
 
   const nodes: React.ReactNode[] = [];

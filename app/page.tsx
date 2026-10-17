@@ -88,6 +88,11 @@ const FAQS = [
       'After generating a resume, you get a 0-100 score showing how well it covers the job description, plus exactly which important keywords you hit and which ones are still missing.',
   },
   {
+    question: 'Is this an ATS resume checker?',
+    answer:
+      "Yes, in effect -- the match score works like an ATS resume scanner, running your resume's wording against the job description's own keywords so you can see what an applicant tracking system would flag as missing before you apply.",
+  },
+  {
     question: 'Can recruiters see my profile without my permission?',
     answer:
       'Only if you turn on "Open to work" yourself. Even then, recruiters only ever see your name, bio, and experience -- never your email or phone number.',
@@ -129,7 +134,7 @@ const STEPS = [
   },
   {
     title: 'Get a tailored resume',
-    body: "Rewritten in the job posting's own language, with a match score showing exactly which keywords you hit and which ones you're missing.",
+    body: "Rewritten in the job posting's own language, plus an instant ATS resume analysis showing exactly which keywords you hit and which ones you're missing.",
     Icon: TailoredDocIcon,
   },
 ];
@@ -173,8 +178,8 @@ export default async function Home() {
           <p className="mt-4 text-base muted sm:text-lg">
             Generic resumes get filtered out before a human ever sees them, and
             tailoring every application by hand takes hours you don&apos;t have.
-            Cease to Resume builds a tailored version from your{' '}
-            <em>real</em> experience, in seconds.
+            Cease to Resume is a free, ATS-friendly resume maker that builds a
+            tailored version from your <em>real</em> experience, in seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
             <Link href="/register" className="btn-primary px-6 py-2.5 text-base">

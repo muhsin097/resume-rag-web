@@ -1,5 +1,15 @@
 import type { StructuredResume } from './generate/actions';
 
+// Skills/Languages/Achievements items carry an empty title today, but
+// older stored generations put the section heading itself in there --
+// skip it either way rather than printing the heading twice.
+function hasOwnItemTitle(
+  item: { title: string },
+  section: { heading: string },
+): boolean {
+  return Boolean(item.title) && item.title.trim().toLowerCase() !== section.heading.trim().toLowerCase();
+}
+
 // Real headings/bullets instead of a <pre> blob -- only possible for
 // generations made after structuredContent shipped; callers fall back to
 // <pre>{generatedContent}</pre> for older rows (structuredContent null).
@@ -21,12 +31,14 @@ export function ResumePreview({ resume }: { resume: StructuredResume }) {
           <p className="section-label" style={{ color: 'var(--accent)' }}>
             {section.heading}
           </p>
-          {section.items.map((item) => (
-            <div key={item.title}>
-              <p className="font-medium">
-                {item.title}
-                {item.subtitle && <span className="muted"> — {item.subtitle}</span>}
-              </p>
+          {section.items.map((item, index) => (
+            <div key={index}>
+              {hasOwnItemTitle(item, section) && (
+                <p className="font-medium">
+                  {item.title}
+                  {item.subtitle && <span className="muted"> — {item.subtitle}</span>}
+                </p>
+              )}
               {item.bullets.length > 0 && (
                 <ul className="ml-4 list-disc space-y-0.5">
                   {item.bullets.map((bullet, index) => (

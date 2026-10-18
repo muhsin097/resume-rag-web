@@ -39,13 +39,19 @@ export function ResumePreview({ resume }: { resume: StructuredResume }) {
                   {item.subtitle && <p className="muted text-xs">{item.subtitle}</p>}
                 </>
               )}
-              {item.bullets.length > 0 && (
-                <ul className="ml-4 list-disc space-y-0.5">
-                  {item.bullets.map((bullet, index) => (
-                    <li key={index}>{bullet}</li>
-                  ))}
-                </ul>
-              )}
+              {item.bullets.length > 0 &&
+                (section.heading === 'Skills' ? (
+                  // One combined, comma-separated line rather than a bullet
+                  // per skill -- wraps naturally no matter how many/long the
+                  // skills are, and reads like a normal resume Skills line.
+                  <p>{item.bullets.join(', ')}</p>
+                ) : (
+                  <ul className="ml-4 list-disc space-y-0.5">
+                    {item.bullets.map((bullet, index) => (
+                      <li key={index}>{bullet}</li>
+                    ))}
+                  </ul>
+                ))}
             </div>
           ))}
         </div>

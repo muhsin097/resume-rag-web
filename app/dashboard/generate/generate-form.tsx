@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { startTransition, useActionState } from 'react';
 import { generateResume } from './actions';
 import { highlightKeywords } from './highlight-keywords';
 import { MissingKeywordsPanel, type RequestedSkill } from './missing-keywords-panel';
@@ -26,7 +26,13 @@ export function GenerateForm() {
     const formData = new FormData();
     formData.set('jobDescription', generation.jobDescription);
     formData.set('requestedSkills', JSON.stringify(requestedSkills));
-    formAction(formData);
+    // formAction must be invoked inside a transition when called directly
+    // (not via a real <form> submit) -- otherwise isPending never flips to
+    // true, so the loader never shows and the click looks like a no-op
+    // until the new generation silently replaces the old one.
+    startTransition(() => {
+      formAction(formData);
+    });
   }
 
   return (

@@ -69,10 +69,16 @@ export async function updateContactInfo(formData: FormData) {
   const phone = formData.get('phone');
   const location = formData.get('location');
   const bio = formData.get('bio');
+  const linkedinUrl = formData.get('linkedinUrl');
+  const githubUrl = formData.get('githubUrl');
+  const websiteUrl = formData.get('websiteUrl');
   if (name !== null) payload.name = String(name);
   if (phone !== null) payload.phone = String(phone);
   if (location !== null) payload.location = String(location);
   if (bio !== null) payload.bio = String(bio);
+  if (linkedinUrl !== null) payload.linkedinUrl = String(linkedinUrl);
+  if (githubUrl !== null) payload.githubUrl = String(githubUrl);
+  if (websiteUrl !== null) payload.websiteUrl = String(websiteUrl);
 
   const response = await apiFetch('/users/me', {
     method: 'PATCH',

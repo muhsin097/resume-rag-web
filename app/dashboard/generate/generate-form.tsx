@@ -66,8 +66,11 @@ export function GenerateForm() {
             <div className="card-muted text-sm text-amber-900">
               Couldn&apos;t add {rejectedKeywords.join(', ')} --{' '}
               {rejectedKeywords.length > 1 ? "they don't" : "it doesn't"} look like a
-              genuine fit for your background, so we left{' '}
-              {rejectedKeywords.length > 1 ? 'them' : 'it'} out.
+              genuine fit based on your current profile, so we left{' '}
+              {rejectedKeywords.length > 1 ? 'them' : 'it'} out. If you genuinely have{' '}
+              {rejectedKeywords.length > 1 ? 'these skills' : 'this skill'}, add{' '}
+              {rejectedKeywords.length > 1 ? 'them' : 'it'} to your profile directly, then
+              try again.
             </div>
           )}
           {approvedSkills.length > 0 && (

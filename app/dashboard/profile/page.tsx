@@ -6,6 +6,7 @@ import { AddExperienceItemForm } from './add-experience-item-form';
 import { AddTagListForm } from './add-tag-list-form';
 import { AboutYouSection } from './about-you-section';
 import { CollapsibleSection } from './collapsible-section';
+import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
 
 export const instant = false;
@@ -33,6 +34,9 @@ interface Me {
   phone: string | null;
   location: string | null;
   bio: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  websiteUrl: string | null;
   jobSearchEnabled: boolean;
   plan: 'FREE' | 'PREMIUM';
   freeGenerationsUsed: number;
@@ -41,15 +45,20 @@ interface Me {
 // Bigger content lives in the main column; shorter, list-like content
 // (certifications, achievements, skills) sits in the side column -- cuts
 // down on vertical scrolling since they read side by side, not stacked.
-const MAIN_GROUPS: { label: string; type: ExperienceType }[] = [
-  { label: 'Experience', type: 'EXPERIENCE' },
-  { label: 'Education', type: 'EDUCATION' },
-  { label: 'Projects', type: 'PROJECT' },
+// Projects defaults closed -- it's the group that tends to accumulate the
+// most entries, so showing it collapsed keeps the page scannable;
+// Experience/Education default open since those are usually few and the
+// most load-bearing to see at a glance.
+const MAIN_GROUPS: { label: string; type: ExperienceType; defaultOpen: boolean }[] = [
+  { label: 'Experience', type: 'EXPERIENCE', defaultOpen: true },
+  { label: 'Education', type: 'EDUCATION', defaultOpen: true },
+  { label: 'Projects', type: 'PROJECT', defaultOpen: false },
 ];
 
-const SIDE_GROUPS: { label: string; type: ExperienceType }[] = [
-  { label: 'Certifications', type: 'CERTIFICATION' },
-  { label: 'Achievements', type: 'ACHIEVEMENT' },
+// Achievements is handled separately below (one combined card instead of
+// a card per item) rather than through this list.
+const SIDE_GROUPS: { label: string; type: ExperienceType; defaultOpen: boolean }[] = [
+  { label: 'Certifications', type: 'CERTIFICATION', defaultOpen: true },
 ];
 
 const FREE_GENERATIONS_LIMIT = 5;
@@ -124,6 +133,32 @@ function ItemCard({
   );
 }
 
+// All achievements in one card as compact rows, rather than a full
+// card-per-item like ItemCard -- achievements tend to be short one-liners,
+// so a card each wastes far more space than it's worth.
+function AchievementsCard({ items }: { items: ExperienceItem[] }) {
+  return (
+    <ul className="card-muted divide-y" style={{ borderColor: 'var(--border-color)' }}>
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className="flex items-start justify-between gap-2 py-2 first:pt-0 last:pb-0"
+        >
+          <div>
+            <p className="text-sm font-medium">{item.title}</p>
+            {item.description && <p className="text-xs muted">{item.description}</p>}
+          </div>
+          <form action={deleteExperienceItem.bind(null, item.id)}>
+            <button type="submit" className="text-xs text-red-600 hover:underline">
+              Delete
+            </button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default async function ProfilePage() {
   let itemsRes, meRes;
   try {
@@ -139,19 +174,18 @@ export default async function ProfilePage() {
   const me: Me = await meRes.json();
 
   const mainGroups = MAIN_GROUPS.map((group) => ({
-    label: group.label,
-    type: group.type,
+    ...group,
     items: items.filter((item) => item.type === group.type),
   })).filter((group) => group.items.length > 0);
 
   const sideGroups = SIDE_GROUPS.map((group) => ({
-    label: group.label,
-    type: group.type,
+    ...group,
     items: items.filter((item) => item.type === group.type),
   })).filter((group) => group.items.length > 0);
 
   const skills = items.filter((item) => item.type === 'SKILL');
   const languages = items.filter((item) => item.type === 'LANGUAGE');
+  const achievements = items.filter((item) => item.type === 'ACHIEVEMENT');
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -192,18 +226,19 @@ export default async function ProfilePage() {
             </p>
           ) : (
             mainGroups.map((group) => (
-              <div key={group.label}>
-                <span
-                  className={`chip ${TYPE_BADGE_CLASSES[group.type]} mb-2 border-0`}
-                >
-                  {group.label}
-                </span>
-                <ul className="mt-2 space-y-2">
+              <ItemGroup
+                key={group.label}
+                label={group.label}
+                badgeClassName={TYPE_BADGE_CLASSES[group.type]}
+                count={group.items.length}
+                defaultOpen={group.defaultOpen}
+              >
+                <ul className="space-y-2">
                   {group.items.map((item) => (
                     <ItemCard key={item.id} item={item} />
                   ))}
                 </ul>
-              </div>
+              </ItemGroup>
             ))
           )}
         </div>
@@ -225,17 +260,31 @@ export default async function ProfilePage() {
           />
 
           {sideGroups.map((group) => (
-            <section key={group.label} className="space-y-2">
-              <span className={`chip ${TYPE_BADGE_CLASSES[group.type]} border-0`}>
-                {group.label}
-              </span>
-              <ul className="mt-2 space-y-2">
+            <ItemGroup
+              key={group.label}
+              label={group.label}
+              badgeClassName={TYPE_BADGE_CLASSES[group.type]}
+              count={group.items.length}
+              defaultOpen={group.defaultOpen}
+            >
+              <ul className="space-y-2">
                 {group.items.map((item) => (
                   <ItemCard key={item.id} item={item} />
                 ))}
               </ul>
-            </section>
+            </ItemGroup>
           ))}
+
+          {achievements.length > 0 && (
+            <ItemGroup
+              label="Achievements"
+              badgeClassName={TYPE_BADGE_CLASSES.ACHIEVEMENT}
+              count={achievements.length}
+              defaultOpen={false}
+            >
+              <AchievementsCard items={achievements} />
+            </ItemGroup>
+          )}
         </div>
       </div>
     </div>

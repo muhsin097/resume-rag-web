@@ -8,13 +8,26 @@ interface Me {
   phone: string | null;
   location: string | null;
   bio: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  websiteUrl: string | null;
 }
 
-// Bio/phone/location/name are each a single value, not a list -- so this is
-// display-then-edit (one value, one form, toggled), not an ever-present
-// form. Once there's data, show it as plain text with an Edit affordance.
+// Candidates type these without a scheme ("linkedin.com/in/x") -- as a
+// plain href that makes it a same-site relative link (broken). Only
+// normalize for display; the stored value stays exactly what was typed.
+function withScheme(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+// Bio/phone/location/name/links are each a single value, not a list -- so
+// this is display-then-edit (one value, one form, toggled), not an
+// ever-present form. Once there's data, show it as plain text with an Edit
+// affordance.
 export function AboutYouSection({ me }: { me: Me }) {
-  const hasData = Boolean(me.phone || me.location || me.bio);
+  const hasData = Boolean(
+    me.phone || me.location || me.bio || me.linkedinUrl || me.githubUrl || me.websiteUrl,
+  );
   const [editing, setEditing] = useState(!hasData);
 
   if (!editing) {
@@ -38,6 +51,40 @@ export function AboutYouSection({ me }: { me: Me }) {
             </p>
           )}
           {me.bio && <p>{me.bio}</p>}
+          {(me.linkedinUrl || me.githubUrl || me.websiteUrl) && (
+            <p className="flex flex-wrap gap-x-3 pt-1">
+              {me.linkedinUrl && (
+                <a
+                  href={withScheme(me.linkedinUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link"
+                >
+                  LinkedIn
+                </a>
+              )}
+              {me.githubUrl && (
+                <a
+                  href={withScheme(me.githubUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link"
+                >
+                  GitHub
+                </a>
+              )}
+              {me.websiteUrl && (
+                <a
+                  href={withScheme(me.websiteUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link"
+                >
+                  Website
+                </a>
+              )}
+            </p>
+          )}
         </div>
       </section>
     );
@@ -77,6 +124,24 @@ export function AboutYouSection({ me }: { me: Me }) {
           defaultValue={me.bio ?? ''}
           placeholder="Short professional bio"
           rows={2}
+          className="input col-span-2"
+        />
+        <input
+          name="linkedinUrl"
+          defaultValue={me.linkedinUrl ?? ''}
+          placeholder="LinkedIn URL"
+          className="input col-span-1"
+        />
+        <input
+          name="githubUrl"
+          defaultValue={me.githubUrl ?? ''}
+          placeholder="GitHub URL"
+          className="input col-span-1"
+        />
+        <input
+          name="websiteUrl"
+          defaultValue={me.websiteUrl ?? ''}
+          placeholder="Personal website URL"
           className="input col-span-2"
         />
         <div className="col-span-2 flex gap-2">

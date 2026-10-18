@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { apiFetch, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { deleteExperienceItem, setJobSearchEnabled } from './actions';
@@ -5,6 +6,7 @@ import { ImportResumeSection } from './import-resume-section';
 import { AddExperienceItemForm } from './add-experience-item-form';
 import { AddTagListForm } from './add-tag-list-form';
 import { AboutYouSection } from './about-you-section';
+import { GettingStartedChecklist } from './getting-started-checklist';
 import { CollapsibleSection } from './collapsible-section';
 import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
@@ -160,11 +162,13 @@ function AchievementsCard({ items }: { items: ExperienceItem[] }) {
 }
 
 export default async function ProfilePage() {
-  let itemsRes, meRes;
+  let itemsRes, meRes, generationsRes;
   try {
-    [itemsRes, meRes] = await Promise.all([
+    [itemsRes, meRes, generationsRes] = await Promise.all([
       apiFetch('/experience-items'),
       apiFetch('/users/me'),
+      // limit=1 -- only the `total` count is needed here, not the rows.
+      apiFetch('/resume-generations?limit=1'),
     ]);
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
@@ -172,6 +176,7 @@ export default async function ProfilePage() {
   }
   const items: ExperienceItem[] = await itemsRes.json();
   const me: Me = await meRes.json();
+  const { total: generationCount }: { total: number } = await generationsRes.json();
 
   const mainGroups = MAIN_GROUPS.map((group) => ({
     ...group,
@@ -198,6 +203,17 @@ export default async function ProfilePage() {
             {me.plan === 'PREMIUM' ? 'Premium plan' : 'Free plan'} &middot;{' '}
             {me.freeGenerationsUsed}/{FREE_GENERATIONS_LIMIT} generations used
           </p>
+          {items.length > 0 && (
+            <p className="mt-1 text-sm">
+              Download resume:{' '}
+              <Link href="/api/resume-export/general?format=docx" className="link">
+                DOCX
+              </Link>{' '}
+              <Link href="/api/resume-export/general?format=pdf" className="link">
+                PDF
+              </Link>
+            </p>
+          )}
         </div>
         <form action={setJobSearchEnabled.bind(null, !me.jobSearchEnabled)}>
           <button
@@ -208,6 +224,11 @@ export default async function ProfilePage() {
           </button>
         </form>
       </section>
+
+      <GettingStartedChecklist
+        hasExperience={items.length > 0}
+        hasGenerated={generationCount > 0}
+      />
 
       <AboutYouSection me={me} />
 

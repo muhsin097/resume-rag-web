@@ -59,6 +59,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    // Same idea as the Google providers below -- the code itself (checked
+    // server-side) is the proof of identity, not a password, so this
+    // exchanges it for a session the same way a verified Google profile
+    // does rather than going through the password-based provider above.
+    Credentials({
+      id: 'verify-email',
+      credentials: {
+        email: { label: 'Email' },
+        code: { label: 'Code' },
+      },
+      authorize: async (credentials) => {
+        const response = await fetch(
+          `${process.env.RESUME_API_BASE_URL}/auth/verify-email`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials?.email,
+              code: credentials?.code,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const data = await response.json();
+        return {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          accessToken: data.accessToken,
+          kind: 'candidate',
+        };
+      },
+    }),
     // Second persona, same NextAuth config -- recruiters and candidates
     // share nothing except the login page's infrastructure. `id: 'recruiter'`
     // is what `signIn('recruiter', ...)` targets, and `kind` (carried through

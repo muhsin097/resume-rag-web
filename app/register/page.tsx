@@ -1,6 +1,5 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Brand } from '../components/brand';
@@ -32,11 +31,11 @@ export default function RegisterPage() {
       return;
     }
 
-    // Account now exists on the Nest side -- sign in to get a NextAuth
-    // session (which stores the Nest access token) in one step.
-    await signIn('credentials', { email, password, redirect: false });
+    // Account now exists, but can't log in yet -- it's unverified until
+    // the OTP emailed to them is entered, so there's no session to start
+    // here. The actual sign-in happens once /verify-email succeeds.
     setSubmitting(false);
-    router.push('/dashboard/profile');
+    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
   }
 
   return (

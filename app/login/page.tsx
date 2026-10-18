@@ -27,6 +27,10 @@ export default function LoginPage() {
     setSubmitting(false);
 
     if (result?.error) {
+      // NextAuth collapses every authorize() failure to the same generic
+      // error, so this can't distinguish "wrong password" from "email not
+      // verified yet" -- the verify-email link covers the latter without
+      // needing to tell the two apart.
       setError('Invalid email or password.');
       return;
     }
@@ -75,7 +79,14 @@ export default function LoginPage() {
             </a>
           </p>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="text-sm text-red-600">
+              {error}{' '}
+              <a href="/verify-email" className="link">
+                Need to verify your email?
+              </a>
+            </p>
+          )}
 
           <button
             type="submit"

@@ -59,6 +59,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
+  // Google Search Console domain-ownership verification -- needed for the
+  // OAuth consent screen branding review (logo verification).
+  verification: { google: "ABfwucocqkMB8Tev3OEm9ut3nNx2DP4ozw9rNY0FYVA" },
   openGraph: {
     type: "website",
     url: SITE_URL,

@@ -20,6 +20,9 @@ function scoreColorClass(score: number): string {
 export function GenerateForm() {
   const [state, formAction, isPending] = useActionState(generateResume, {});
   const generation = state.generation;
+  const keywordResults = generation?.keywordResults ?? [];
+  const approvedSkills = keywordResults.filter((r) => r.approved).map((r) => r.normalizedTitle);
+  const rejectedKeywords = keywordResults.filter((r) => !r.approved).map((r) => r.keyword);
 
   function handleAddKeywords(requestedSkills: RequestedSkill[]) {
     if (!generation) return;
@@ -59,6 +62,19 @@ export function GenerateForm() {
 
       {!isPending && generation && (
         <div className="space-y-4">
+          {rejectedKeywords.length > 0 && (
+            <div className="card-muted text-sm text-amber-900">
+              Couldn&apos;t add {rejectedKeywords.join(', ')} --{' '}
+              {rejectedKeywords.length > 1 ? "they don't" : "it doesn't"} look like a
+              genuine fit for your background, so we left{' '}
+              {rejectedKeywords.length > 1 ? 'them' : 'it'} out.
+            </div>
+          )}
+          {approvedSkills.length > 0 && (
+            <div className="card-muted text-sm text-green-900">
+              Added to your resume: {approvedSkills.join(', ')}
+            </div>
+          )}
           <div className="card flex flex-wrap items-center gap-4">
             <div
               className={`flex h-16 w-16 flex-none items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.matchScore)}`}
@@ -128,7 +144,10 @@ export function GenerateForm() {
                 </div>
               </div>
               {generation.structuredContent ? (
-                <ResumePreview resume={generation.structuredContent} />
+                <ResumePreview
+                  resume={generation.structuredContent}
+                  highlightedSkills={approvedSkills}
+                />
               ) : (
                 <pre className="whitespace-pre-wrap font-sans text-sm">
                   {generation.generatedContent}

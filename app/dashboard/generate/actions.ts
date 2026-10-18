@@ -19,6 +19,12 @@ export interface StructuredResume {
   sections: ResumeSection[];
 }
 
+export interface KeywordResult {
+  keyword: string;
+  normalizedTitle: string;
+  approved: boolean;
+}
+
 export interface GenerateResumeState {
   error?: string;
   generation?: {
@@ -30,6 +36,10 @@ export interface GenerateResumeState {
     matchedKeywords: string[];
     missingKeywords: string[];
     createdAt: string;
+    // Only present on a response to a request that included requestedSkills
+    // -- feedback on what happened to each one, not a stored fact of the
+    // generation itself.
+    keywordResults?: KeywordResult[];
   };
 }
 

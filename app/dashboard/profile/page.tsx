@@ -7,6 +7,7 @@ import { AddExperienceItemForm } from './add-experience-item-form';
 import { AddTagListForm } from './add-tag-list-form';
 import { AboutYouSection } from './about-you-section';
 import { GettingStartedChecklist } from './getting-started-checklist';
+import { DeleteAccountSection } from './delete-account-section';
 import { CollapsibleSection } from './collapsible-section';
 import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
@@ -308,6 +309,8 @@ export default async function ProfilePage() {
           )}
         </div>
       </div>
+
+      <DeleteAccountSection />
     </div>
   );
 }

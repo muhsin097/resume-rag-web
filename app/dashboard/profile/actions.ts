@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { apiFetch } from '@/lib/api';
+import { signOut } from '@/auth';
 
 export async function createExperienceItem(formData: FormData) {
   const payload: Record<string, string> = {
@@ -103,4 +104,16 @@ export async function setJobSearchEnabled(enabled: boolean) {
   }
 
   revalidatePath('/dashboard/profile');
+}
+
+// Soft-deletes on the API side (profile data + experience items/history
+// genuinely removed, email + generation usage retained to stop a
+// delete-then-re-register loop from resetting the free tier) -- this just
+// needs to end the browser's own session afterward.
+export async function deleteAccount() {
+  const response = await apiFetch('/users/me', { method: 'DELETE' });
+  if (!response.ok) {
+    throw new Error('Could not delete account');
+  }
+  await signOut({ redirectTo: '/' });
 }

@@ -69,6 +69,12 @@ export default function LoginPage() {
             />
           </label>
 
+          <p className="text-sm">
+            <a href="/forgot-password" className="link">
+              Forgot password?
+            </a>
+          </p>
+
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button

@@ -11,30 +11,36 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    setNeedsVerification(false);
 
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
+    // NextAuth's authorize() collapses every failure into the same
+    // generic error, so it can't tell "wrong password" apart from "needs
+    // verification" -- hit the API directly first to get the real reason
+    // (a small redundant call, only on this path), then establish the
+    // actual session via signIn() once we know the credentials are good.
+    const checkResponse = await fetch('/api/login-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
     });
 
-    setSubmitting(false);
-
-    if (result?.error) {
-      // NextAuth collapses every authorize() failure to the same generic
-      // error, so this can't distinguish "wrong password" from "email not
-      // verified yet" -- the verify-email link covers the latter without
-      // needing to tell the two apart.
-      setError('Invalid email or password.');
+    if (!checkResponse.ok) {
+      const data = await checkResponse.json().catch(() => null);
+      setSubmitting(false);
+      setNeedsVerification(checkResponse.status === 403);
+      setError(data?.message ?? 'Invalid email or password.');
       return;
     }
 
+    await signIn('credentials', { email, password, redirect: false });
+    setSubmitting(false);
     router.push('/dashboard/profile');
   }
 
@@ -81,10 +87,15 @@ export default function LoginPage() {
 
           {error && (
             <p className="text-sm text-red-600">
-              {error}{' '}
-              <a href="/verify-email" className="link">
-                Need to verify your email?
-              </a>
+              {error}
+              {needsVerification && (
+                <>
+                  {' '}
+                  <a href={`/verify-email?email=${encodeURIComponent(email)}`} className="link">
+                    Verify now
+                  </a>
+                </>
+              )}
             </p>
           )}
 

@@ -79,13 +79,30 @@ export function GenerateForm() {
             </div>
           )}
           <div className="card flex flex-wrap items-center gap-4">
-            <div
-              className={`flex h-16 w-16 flex-none items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.matchScore)}`}
-            >
-              {generation.matchScore}
+            <div className="flex flex-none items-center gap-3">
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.keywordCoverage)}`}
+                >
+                  {generation.keywordCoverage}
+                </div>
+                <span className="text-xs muted">Keyword coverage</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.fitScore)}`}
+                >
+                  {generation.fitScore}
+                </div>
+                <span className="text-xs muted">Overall fit</span>
+              </div>
             </div>
             <div className="space-y-1 text-sm">
-              <p className="font-medium">Match score out of 100</p>
+              <p className="font-medium">
+                Keyword coverage is how many of the job&apos;s key terms your resume matches.
+                Overall fit is Claude&apos;s broader read of how well your background fits the
+                role, beyond just those terms.
+              </p>
               <p className="muted">
                 <span className="mr-1 inline-block h-2 w-2 rounded-full bg-green-500 align-middle" />
                 matched in the resume

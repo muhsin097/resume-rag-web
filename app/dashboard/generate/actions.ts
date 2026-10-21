@@ -32,7 +32,12 @@ export interface GenerateResumeState {
     jobDescription: string;
     generatedContent: string;
     structuredContent: StructuredResume | null;
-    matchScore: number;
+    // Two deliberately separate signals -- see generate-form.tsx for how
+    // they're displayed. fitScore is Claude's holistic judgment of overall
+    // candidate fit; keywordCoverage is a deterministic percentage of the
+    // JD's keywords this resume matches.
+    fitScore: number;
+    keywordCoverage: number;
     matchedKeywords: string[];
     missingKeywords: string[];
     createdAt: string;

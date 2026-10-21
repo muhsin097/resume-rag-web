@@ -16,7 +16,8 @@ interface ResumeGeneration {
   companyName: string | null;
   generatedContent: string;
   structuredContent: StructuredResume | null;
-  matchScore: number;
+  fitScore: number;
+  keywordCoverage: number;
   createdAt: string;
 }
 
@@ -90,6 +91,12 @@ export default async function HistoryPage({
         </p>
       )}
 
+      {data.items.length > 0 && (
+        <p className="text-xs muted">
+          Each entry shows two scores: keyword coverage, then overall fit.
+        </p>
+      )}
+
       {data.items.map((generation) => {
         const heading = generation.jobTitle
           ? generation.companyName
@@ -102,10 +109,19 @@ export default async function HistoryPage({
         return (
           <details key={generation.id} className="card">
             <summary className="flex cursor-pointer items-start gap-3 text-sm">
-              <span
-                className={`flex h-8 w-8 flex-none items-center justify-center rounded-full text-xs font-semibold ${scoreColorClass(generation.matchScore)}`}
-              >
-                {generation.matchScore}
+              <span className="flex flex-none items-center gap-1.5">
+                <span
+                  title="Keyword coverage"
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${scoreColorClass(generation.keywordCoverage)}`}
+                >
+                  {generation.keywordCoverage}
+                </span>
+                <span
+                  title="Overall fit"
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${scoreColorClass(generation.fitScore)}`}
+                >
+                  {generation.fitScore}
+                </span>
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">{heading}</span>

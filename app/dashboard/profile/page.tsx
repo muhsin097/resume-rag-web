@@ -43,6 +43,8 @@ interface Me {
   jobSearchEnabled: boolean;
   plan: 'FREE' | 'PREMIUM';
   freeGenerationsUsed: number;
+  creditsBalance: number;
+  creditsExpireAt: string | null;
 }
 
 // Bigger content lives in the main column; shorter, list-like content
@@ -64,7 +66,10 @@ const SIDE_GROUPS: { label: string; type: ExperienceType; defaultOpen: boolean }
   { label: 'Certifications', type: 'CERTIFICATION', defaultOpen: true },
 ];
 
-const FREE_GENERATIONS_LIMIT = 5;
+function formatExpiry(iso: string | null): string | null {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 // Shared by Skills and Languages -- both are short, tag-like facts shown
 // as a chip row rather than a card per entry.
@@ -201,8 +206,20 @@ export default async function ProfilePage() {
             {me.name} &middot; {me.email}
           </p>
           <p className="text-sm muted">
-            {me.plan === 'PREMIUM' ? 'Premium plan' : 'Free plan'} &middot;{' '}
-            {me.freeGenerationsUsed}/{FREE_GENERATIONS_LIMIT} generations used
+            {me.plan === 'PREMIUM' ? (
+              'Unlimited generations'
+            ) : (
+              <>
+                {me.creditsBalance} generation{me.creditsBalance === 1 ? '' : 's'} remaining
+                {me.creditsExpireAt && me.creditsBalance > 0
+                  ? ` (expires ${formatExpiry(me.creditsExpireAt)})`
+                  : ''}
+                {' -- '}
+                <Link href="/dashboard/buy-credits" className="link">
+                  buy more
+                </Link>
+              </>
+            )}
           </p>
           {items.length > 0 && (
             <p className="mt-1 text-sm">

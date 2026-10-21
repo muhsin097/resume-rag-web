@@ -1,10 +1,9 @@
+import Link from 'next/link';
 import { apiFetch, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { GenerateForm } from './generate-form';
 
 export const instant = false;
-
-const FREE_GENERATIONS_LIMIT = 5;
 
 export default async function GeneratePage() {
   let meRes;
@@ -16,17 +15,19 @@ export default async function GeneratePage() {
   }
   const me = await meRes.json();
 
-  const remaining =
-    me.plan === 'PREMIUM'
-      ? null
-      : Math.max(0, FREE_GENERATIONS_LIMIT - me.freeGenerationsUsed);
-
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="card text-sm">
-        {me.plan === 'PREMIUM'
-          ? 'Premium plan: unlimited generations.'
-          : `${remaining} of ${FREE_GENERATIONS_LIMIT} free generations remaining.`}
+        {me.plan === 'PREMIUM' ? (
+          'Unlimited generations.'
+        ) : (
+          <>
+            {me.creditsBalance} generation{me.creditsBalance === 1 ? '' : 's'} remaining.{' '}
+            <Link href="/dashboard/buy-credits" className="link">
+              Buy more
+            </Link>
+          </>
+        )}
       </div>
       <GenerateForm />
     </div>

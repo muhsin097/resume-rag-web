@@ -4,6 +4,7 @@ import { startTransition, useActionState } from 'react';
 import { generateResume } from './actions';
 import { highlightKeywords } from './highlight-keywords';
 import { MissingKeywordsPanel, type RequestedSkill } from './missing-keywords-panel';
+import Link from 'next/link';
 import { ResumePreview } from '../resume-preview';
 import { FullPageLoader } from '../../components/full-page-loader';
 
@@ -55,7 +56,19 @@ export function GenerateForm() {
         <button type="submit" disabled={isPending} className="btn-primary">
           {isPending ? 'Generating...' : 'Generate tailored resume'}
         </button>
-        {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+        {state.error && (
+          <p className="text-sm text-red-600">
+            {state.error}
+            {state.error.includes('No generation credits remaining') && (
+              <>
+                {' '}
+                <Link href="/dashboard/buy-credits" className="link">
+                  Buy more
+                </Link>
+              </>
+            )}
+          </p>
+        )}
       </form>
 
       {isPending && (

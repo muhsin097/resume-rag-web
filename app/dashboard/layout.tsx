@@ -48,6 +48,9 @@ export default async function DashboardLayout({
             <Link href="/dashboard/generate" className="btn-ghost px-2 sm:px-3.5">
               Generate
             </Link>
+            <Link href="/dashboard/buy-credits" className="btn-ghost px-2 sm:px-3.5">
+              Buy credits
+            </Link>
             <Link href="/dashboard/history" className="btn-ghost px-2 sm:px-3.5">
               History
             </Link>

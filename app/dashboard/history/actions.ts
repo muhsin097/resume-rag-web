@@ -10,9 +10,8 @@ export interface RegenerateState {
 
 // Same shape as generateResume in dashboard/generate/actions.ts -- this
 // IS that same POST /resume-generations call, just fed a stored job
-// description instead of a freshly-typed one. Gated by the same
-// freeGenerationsUsed check the service already does; no separate credit
-// system needed.
+// description instead of a freshly-typed one. Gated by the same credit
+// reservation the service already does; no separate check needed here.
 export async function regenerateResumeGeneration(
   _prevState: RegenerateState,
   formData: FormData,

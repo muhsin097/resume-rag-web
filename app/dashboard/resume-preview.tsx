@@ -25,7 +25,7 @@ export function ResumePreview({
 }) {
   const highlightedSet = new Set(highlightedSkills?.map((s) => s.toLowerCase()));
   return (
-    <div className="space-y-3 text-sm">
+    <div className="space-y-4 text-sm">
       <div>
         <p className="font-semibold">{resume.name}</p>
         {resume.title && (
@@ -35,7 +35,14 @@ export function ResumePreview({
         )}
         <p className="muted text-xs">{resume.contactLine}</p>
       </div>
-      {resume.summary && <p>{resume.summary}</p>}
+      {resume.summary && (
+        <div className="space-y-1">
+          <p className="section-label" style={{ color: 'var(--accent)' }}>
+            Professional Summary
+          </p>
+          <p>{resume.summary}</p>
+        </div>
+      )}
       {resume.sections.map((section) => (
         <div key={section.heading} className="space-y-2">
           <p className="section-label" style={{ color: 'var(--accent)' }}>
@@ -43,20 +50,16 @@ export function ResumePreview({
           </p>
           {section.items.map((item, index) => (
             <div key={index}>
-              {hasOwnItemTitle(item, section) && (
-                <>
-                  <p className="font-medium">{item.title}</p>
-                  {item.subtitle && <p className="muted text-xs">{item.subtitle}</p>}
-                </>
-              )}
-              {item.bullets.length > 0 &&
-                (section.heading === 'Skills' ? (
-                  // One combined, comma-separated line rather than a bullet
-                  // per skill -- wraps naturally no matter how many/long the
-                  // skills are, and reads like a normal resume Skills line.
-                  // Each skill is still its own span so a just-approved one
-                  // can be highlighted without breaking the flowing layout.
-                  <p>
+              {section.heading === 'Skills' ? (
+                // One category per line ("Category: skill, skill, skill")
+                // rather than a bullet per skill or one giant
+                // comma-separated line -- reads like a normal resume Skills
+                // section. Each skill is still its own span so a
+                // just-approved one can be highlighted. Items with no
+                // category yet just render their list with no leading label.
+                item.bullets.length > 0 && (
+                  <p className="pl-1">
+                    {item.title && <span className="font-medium">{item.title}: </span>}
                     {item.bullets.map((skill, i) => (
                       <span key={skill}>
                         <span
@@ -72,13 +75,24 @@ export function ResumePreview({
                       </span>
                     ))}
                   </p>
-                ) : (
-                  <ul className="ml-4 list-disc space-y-0.5">
-                    {item.bullets.map((bullet, index) => (
-                      <li key={index}>{bullet}</li>
-                    ))}
-                  </ul>
-                ))}
+                )
+              ) : (
+                <>
+                  {hasOwnItemTitle(item, section) && (
+                    <>
+                      <p className="font-medium">{item.title}</p>
+                      {item.subtitle && <p className="muted text-xs">{item.subtitle}</p>}
+                    </>
+                  )}
+                  {item.bullets.length > 0 && (
+                    <ul className="ml-5 list-disc space-y-1">
+                      {item.bullets.map((bullet, index) => (
+                        <li key={index}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )}
             </div>
           ))}
         </div>

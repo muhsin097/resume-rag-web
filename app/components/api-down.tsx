@@ -18,7 +18,7 @@ function retry(reset?: () => void) {
 
 export function ApiDownMessage({ reset }: { reset?: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8 text-center">
       <Brand size="sm" />
       <h1 className="text-xl font-semibold">We&apos;re experiencing heavier load right now</h1>
       <p className="max-w-sm text-sm muted">
@@ -35,7 +35,7 @@ export function ApiDownMessage({ reset }: { reset?: () => void }) {
 // friendly, but doesn't claim to know what happened.
 export function GenericErrorMessage({ reset }: { reset?: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8 text-center">
       <h1 className="text-xl font-semibold">Something went wrong</h1>
       <p className="max-w-sm text-sm muted">
         Please try again. If this keeps happening, let us know.

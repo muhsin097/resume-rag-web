@@ -5,7 +5,7 @@ import { generateResume } from './actions';
 import { highlightKeywords } from './highlight-keywords';
 import { MissingKeywordsPanel, type RequestedSkill } from './missing-keywords-panel';
 import { ResumePreview } from '../resume-preview';
-import { BrandLoader } from '../../components/brand-loader';
+import { FullPageLoader } from '../../components/full-page-loader';
 
 function scoreColorClass(score: number): string {
   if (score >= 80) {
@@ -58,7 +58,9 @@ export function GenerateForm() {
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       </form>
 
-      {isPending && <BrandLoader label="Reading your profile and tailoring your resume..." />}
+      {isPending && (
+        <FullPageLoader label="Reading your profile and tailoring your resume..." />
+      )}
 
       {!isPending && generation && (
         <div className="space-y-4">

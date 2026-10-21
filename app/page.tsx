@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import { Brand } from './components/brand';
 import { HeroIllustration } from './components/hero-illustration';
 import { StatsCounter } from './components/stats-counter';
+import { ScoreLegend } from './components/score-legend';
 
 export const instant = false;
 
@@ -83,9 +84,9 @@ const FAQS = [
       'Yes -- upload a PDF, Word document, or plain-text resume (up to 5MB) and it extracts your experience, education, projects, and skills into your profile automatically.',
   },
   {
-    question: 'What does the match score mean?',
+    question: 'What do the two scores mean?',
     answer:
-      'After generating a resume, you get a 0-100 score showing how well it covers the job description, plus exactly which important keywords you hit and which ones are still missing.',
+      'Every generation comes back with two separate numbers instead of one vague score: keyword coverage (a plain percentage of the job description\'s specific keywords your resume matches) and overall fit (Claude\'s own holistic read of how well your full background fits the role). You also see exactly which keywords you hit and which ones are still missing.',
   },
   {
     question: 'Is this an ATS resume checker?',
@@ -219,6 +220,18 @@ export default async function Home() {
               <p className="text-sm muted">{step.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-6 pb-16">
+        <h2 className="text-center font-semibold">See exactly how you measure up</h2>
+        <p className="mx-auto mt-2 max-w-xl text-center text-sm muted">
+          Every tailored resume comes back with two scores, not one vague
+          number -- so you know whether to add more keywords or whether your
+          background genuinely isn&apos;t a fit.
+        </p>
+        <div className="mt-6">
+          <ScoreLegend />
         </div>
       </section>
 

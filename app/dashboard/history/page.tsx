@@ -3,6 +3,7 @@ import { apiFetch, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { RegenerateButton } from './regenerate-button';
 import { ResumePreview } from '../resume-preview';
+import { ScoreLegend } from '../../components/score-legend';
 import type { StructuredResume } from '../generate/actions';
 
 export const instant = false;
@@ -92,9 +93,20 @@ export default async function HistoryPage({
       )}
 
       {data.items.length > 0 && (
-        <p className="text-xs muted">
-          Each entry shows two scores: keyword coverage, then overall fit.
-        </p>
+        <details className="card group">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium">
+            What do the two scores on each entry mean?
+            <span
+              className="flex-none text-lg muted transition-transform duration-200 group-open:rotate-45"
+              aria-hidden="true"
+            >
+              +
+            </span>
+          </summary>
+          <div className="mt-3">
+            <ScoreLegend />
+          </div>
+        </details>
       )}
 
       {data.items.map((generation) => {
@@ -112,13 +124,13 @@ export default async function HistoryPage({
               <span className="flex flex-none items-center gap-1.5">
                 <span
                   title="Keyword coverage"
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${scoreColorClass(generation.keywordCoverage)}`}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${scoreColorClass(generation.keywordCoverage)}`}
                 >
                   {generation.keywordCoverage}
                 </span>
                 <span
                   title="Overall fit"
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${scoreColorClass(generation.fitScore)}`}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${scoreColorClass(generation.fitScore)}`}
                 >
                   {generation.fitScore}
                 </span>

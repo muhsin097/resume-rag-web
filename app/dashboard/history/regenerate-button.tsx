@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useActionState } from 'react';
 import { regenerateResumeGeneration } from './actions';
+import { FullPageLoader } from '../../components/full-page-loader';
 
 // Rendered as a sibling of <summary>, never nested inside it -- so
 // clicking the button never also toggles the parent <details> open/closed.
@@ -20,16 +20,7 @@ export function RegenerateButton({ jobDescription }: { jobDescription: string })
       </form>
 
       {isPending && (
-        <p className="mt-2 flex items-center gap-1.5 text-xs muted">
-          <Image
-            src="/logo-mark.png"
-            alt=""
-            width={16}
-            height={16}
-            className="h-4 w-4 motion-safe:animate-pulse"
-          />
-          Generating a fresh version from your updated profile...
-        </p>
+        <FullPageLoader label="Generating a fresh version from your updated profile..." />
       )}
 
       {/* A new entry lands at the top of this same list -- the old row

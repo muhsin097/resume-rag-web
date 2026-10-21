@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { ApiDownMessage, GenericErrorMessage } from './components/api-down';
 
 // Root-level fallback -- app/dashboard/error.tsx and
@@ -13,6 +14,15 @@ export default function RootError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // Next.js redacts error.message/stack from the client in production
+  // builds, but the full object (plus .digest, which maps back to the
+  // server-side log line) is still real here -- this is the only trace of
+  // a render-time crash we'd otherwise have, so it's worth logging even
+  // before there's a real monitoring service wired up to catch it.
+  useEffect(() => {
+    console.error('[error-boundary:root]', error);
+  }, [error]);
+
   if (error.message === 'API_UNAVAILABLE') {
     return <ApiDownMessage reset={reset} />;
   }

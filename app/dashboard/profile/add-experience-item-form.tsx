@@ -26,6 +26,7 @@ function showDates(type: FormExperienceType): boolean {
 
 export function AddExperienceItemForm() {
   const [type, setType] = useState<FormExperienceType>('EXPERIENCE');
+  const [isCurrent, setIsCurrent] = useState(false);
 
   return (
     <form action={createExperienceItem} className="card grid grid-cols-2 gap-3">
@@ -61,18 +62,43 @@ export function AddExperienceItemForm() {
         <div
           className={
             showOrganization(type)
-              ? 'col-span-1 grid grid-cols-2 gap-2'
-              : 'col-span-2 grid grid-cols-2 gap-2'
+              ? 'col-span-1 space-y-2'
+              : 'col-span-2 space-y-2'
           }
         >
-          <label className="space-y-1">
-            <span className="text-sm muted">Start date</span>
-            <input type="date" name="startDate" className="input" />
+          <div className="grid grid-cols-2 gap-2">
+            <label className="space-y-1">
+              <span className="text-sm muted">Start date</span>
+              <input type="date" name="startDate" className="input" />
+            </label>
+            <label className="space-y-1">
+              <span className="text-sm muted">End date</span>
+              <input
+                type="date"
+                name="endDate"
+                disabled={isCurrent}
+                className="input disabled:opacity-50"
+              />
+            </label>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="isCurrent"
+              checked={isCurrent}
+              onChange={(e) => setIsCurrent(e.target.checked)}
+            />
+            Currently ongoing
           </label>
-          <label className="space-y-1">
-            <span className="text-sm muted">End date</span>
-            <input type="date" name="endDate" className="input" />
-          </label>
+          {/* Leaving end date blank without checking this means "ended,
+              exact date just not known" -- not "still ongoing". Only
+              check this if it's genuinely still in progress. */}
+          {!isCurrent && (
+            <p className="text-xs muted">
+              Leave end date blank if it already ended but you don&apos;t
+              remember exactly when.
+            </p>
+          )}
         </div>
       )}
 

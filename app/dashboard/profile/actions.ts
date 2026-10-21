@@ -5,7 +5,7 @@ import { apiFetch } from '@/lib/api';
 import { signOut } from '@/auth';
 
 export async function createExperienceItem(formData: FormData) {
-  const payload: Record<string, string> = {
+  const payload: Record<string, string | boolean> = {
     type: String(formData.get('type')),
     title: String(formData.get('title')),
   };
@@ -13,10 +13,15 @@ export async function createExperienceItem(formData: FormData) {
   const description = formData.get('description');
   const startDate = formData.get('startDate');
   const endDate = formData.get('endDate');
+  const isCurrent = formData.get('isCurrent') === 'on';
   if (organization) payload.organization = String(organization);
   if (description) payload.description = String(description);
   if (startDate) payload.startDate = String(startDate);
-  if (endDate) payload.endDate = String(endDate);
+  // Mutually exclusive with isCurrent -- the form disables/clears the end
+  // date input when "currently ongoing" is checked, so this is a
+  // defensive guard against ever sending both.
+  if (endDate && !isCurrent) payload.endDate = String(endDate);
+  payload.isCurrent = isCurrent;
 
   const response = await apiFetch('/experience-items', {
     method: 'POST',

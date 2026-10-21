@@ -23,6 +23,10 @@ export interface ExtractedItem {
   endDate?: string | null;
   startDatePrecision?: DatePrecision | null;
   endDatePrecision?: DatePrecision | null;
+  // True only when the source resume explicitly signalled this is
+  // ongoing -- not just "no end date given". See ExperienceItem.isCurrent
+  // in the API's Prisma schema.
+  isCurrent?: boolean;
 }
 
 export interface ExtractedContactInfo {
@@ -81,9 +85,10 @@ export async function saveExtractedResume(
 ) {
   if (items.length > 0) {
     const payloadItems = items.map((item) => {
-      const payload: Record<string, string> = {
+      const payload: Record<string, string | boolean> = {
         type: item.type,
         title: item.title,
+        isCurrent: Boolean(item.isCurrent),
       };
       if (item.organization) payload.organization = item.organization;
       if (item.description) payload.description = item.description;
@@ -93,7 +98,8 @@ export async function saveExtractedResume(
         payload.startDate = item.startDate;
         if (item.startDatePrecision) payload.startDatePrecision = item.startDatePrecision;
       }
-      if (item.endDate && ISO_DATE.test(item.endDate)) {
+      // Mutually exclusive with isCurrent, same as the manual-entry form.
+      if (item.endDate && ISO_DATE.test(item.endDate) && !item.isCurrent) {
         payload.endDate = item.endDate;
         if (item.endDatePrecision) payload.endDatePrecision = item.endDatePrecision;
       }

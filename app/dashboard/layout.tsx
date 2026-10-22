@@ -94,14 +94,15 @@ export default async function DashboardLayout({
             <div className="hidden sm:block">{signOutForm}</div>
             <label
               htmlFor="mobile-nav-toggle"
-              className="btn-ghost flex h-9 w-9 cursor-pointer items-center justify-center sm:hidden"
+              className="flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-lg sm:hidden"
+              style={{ border: '1px solid var(--accent)', color: 'var(--accent)' }}
               aria-label="Toggle menu"
             >
-              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
                 <path
                   d="M4 6h16M4 12h16M4 18h16"
                   stroke="currentColor"
-                  strokeWidth="1.8"
+                  strokeWidth="2.2"
                   strokeLinecap="round"
                 />
               </svg>

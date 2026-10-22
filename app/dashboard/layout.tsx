@@ -40,46 +40,82 @@ export default async function DashboardLayout({
     // ignore -- badge just won't render this request
   }
 
+  const navLinks = (
+    <>
+      <Link href="/dashboard/profile" className="btn-ghost px-2 sm:px-3.5">
+        Profile
+      </Link>
+      <Link href="/dashboard/generate" className="btn-ghost px-2 sm:px-3.5">
+        Generate
+      </Link>
+      <Link href="/dashboard/buy-credits" className="btn-ghost px-2 sm:px-3.5">
+        Buy credits
+      </Link>
+      <Link href="/dashboard/history" className="btn-ghost px-2 sm:px-3.5">
+        History
+      </Link>
+    </>
+  );
+
+  const signOutForm = (
+    <form
+      action={async () => {
+        'use server';
+        await signOut({ redirectTo: '/' });
+      }}
+    >
+      <button type="submit" className="btn-ghost">
+        Sign out ({session.user?.email})
+      </button>
+    </form>
+  );
+
   return (
     <div className="flex flex-1 flex-col">
       <header
-        className="flex flex-wrap items-center justify-between gap-y-2 px-4 py-3 sm:px-6"
         style={{
           borderBottom: '1px solid var(--border-color)',
           background: 'var(--surface)',
         }}
       >
-        <div className="flex items-center gap-3 sm:gap-6">
-          <Link href="/dashboard/profile">
-            <Brand size="sm" />
-          </Link>
-          <nav className="flex gap-0.5 text-sm sm:gap-1">
-            <Link href="/dashboard/profile" className="btn-ghost px-2 sm:px-3.5">
-              Profile
+        {/* Checkbox-driven mobile menu -- no client component needed just
+            to toggle a panel's visibility. peer-checked below targets the
+            mobile-only panel, which comes later as a sibling of this. */}
+        <input type="checkbox" id="mobile-nav-toggle" className="peer hidden" />
+        <div className="flex items-center justify-between gap-y-2 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <Link href="/dashboard/profile">
+              <Brand size="sm" />
             </Link>
-            <Link href="/dashboard/generate" className="btn-ghost px-2 sm:px-3.5">
-              Generate
-            </Link>
-            <Link href="/dashboard/buy-credits" className="btn-ghost px-2 sm:px-3.5">
-              Buy credits
-            </Link>
-            <Link href="/dashboard/history" className="btn-ghost px-2 sm:px-3.5">
-              History
-            </Link>
-          </nav>
+            <nav className="hidden gap-0.5 text-sm sm:flex sm:gap-1">{navLinks}</nav>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {me && <CreditsBadge plan={me.plan} creditsBalance={me.creditsBalance} />}
+            <div className="hidden sm:block">{signOutForm}</div>
+            <label
+              htmlFor="mobile-nav-toggle"
+              className="btn-ghost flex h-9 w-9 cursor-pointer items-center justify-center sm:hidden"
+              aria-label="Toggle menu"
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+                <path
+                  d="M4 6h16M4 12h16M4 18h16"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </label>
+          </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          {me && <CreditsBadge plan={me.plan} creditsBalance={me.creditsBalance} />}
-          <form
-            action={async () => {
-              'use server';
-              await signOut({ redirectTo: '/' });
-            }}
-          >
-            <button type="submit" className="btn-ghost">
-              Sign out<span className="hidden sm:inline"> ({session.user?.email})</span>
-            </button>
-          </form>
+        {/* Mobile-only dropdown panel -- shown when the checkbox above is
+            checked, never rendered at sm and up regardless of its state. */}
+        <div
+          className="hidden flex-col gap-1 px-4 pb-3 text-sm max-sm:peer-checked:flex"
+          style={{ borderTop: '1px solid var(--border-color)' }}
+        >
+          <div className="flex flex-col gap-1 pt-2">{navLinks}</div>
+          {signOutForm}
         </div>
       </header>
       <main

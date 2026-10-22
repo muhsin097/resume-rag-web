@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { ApiDownMessage, GenericErrorMessage } from '../components/api-down';
 
 export default function DashboardError({
@@ -12,6 +13,7 @@ export default function DashboardError({
 }) {
   useEffect(() => {
     console.error('[error-boundary:dashboard]', error);
+    if (error.message !== 'API_UNAVAILABLE') Sentry.captureException(error);
   }, [error]);
 
   if (error.message === 'API_UNAVAILABLE') {

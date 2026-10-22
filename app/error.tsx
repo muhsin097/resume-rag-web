@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { ApiDownMessage, GenericErrorMessage } from './components/api-down';
 
 // Root-level fallback -- app/dashboard/error.tsx and
@@ -21,6 +22,10 @@ export default function RootError({
   // before there's a real monitoring service wired up to catch it.
   useEffect(() => {
     console.error('[error-boundary:root]', error);
+    // API_UNAVAILABLE is a known, expected state (ApiDownMessage handles
+    // it) -- not worth spending the error-tracking quota on, especially
+    // since a real outage is exactly when it'd fire on every page load.
+    if (error.message !== 'API_UNAVAILABLE') Sentry.captureException(error);
   }, [error]);
 
   if (error.message === 'API_UNAVAILABLE') {

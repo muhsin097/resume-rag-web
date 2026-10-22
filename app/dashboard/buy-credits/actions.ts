@@ -28,3 +28,20 @@ export async function createOrder(pack: CreditPack): Promise<CreateOrderResult> 
   }
   return response.json();
 }
+
+export interface OrderStatus {
+  status: 'PENDING' | 'PAID' | 'FAILED';
+  credits: number;
+}
+
+// Polled after Razorpay's own client-side success callback fires, so the
+// UI's "purchased" confirmation reflects the webhook having actually
+// landed and credited the account -- not a timeout guess that it
+// probably did by now.
+export async function getOrderStatus(orderId: string): Promise<OrderStatus> {
+  const response = await apiFetch(`/payments/orders/${orderId}`);
+  if (!response.ok) {
+    throw new Error('Could not check order status.');
+  }
+  return response.json();
+}

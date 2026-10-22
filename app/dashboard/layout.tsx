@@ -3,7 +3,9 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { connection } from 'next/server';
 import { auth, signOut } from '@/auth';
+import { apiFetch } from '@/lib/api';
 import { Brand } from '../components/brand';
+import { CreditsBadge } from './credits-badge';
 
 // Route-level opt-out of static prerendering (this layout reads the
 // session on every request to gate /dashboard/*).
@@ -26,6 +28,16 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session || session.user.kind !== 'candidate') {
     redirect('/');
+  }
+
+  // Best-effort -- a hiccup fetching the balance shouldn't take down the
+  // whole dashboard shell, just hide the badge for that one request.
+  let me: { plan: 'FREE' | 'PREMIUM'; creditsBalance: number } | null = null;
+  try {
+    const meRes = await apiFetch('/users/me');
+    if (meRes.ok) me = await meRes.json();
+  } catch {
+    // ignore -- badge just won't render this request
   }
 
   return (
@@ -56,16 +68,19 @@ export default async function DashboardLayout({
             </Link>
           </nav>
         </div>
-        <form
-          action={async () => {
-            'use server';
-            await signOut({ redirectTo: '/' });
-          }}
-        >
-          <button type="submit" className="btn-ghost">
-            Sign out<span className="hidden sm:inline"> ({session.user?.email})</span>
-          </button>
-        </form>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {me && <CreditsBadge plan={me.plan} creditsBalance={me.creditsBalance} />}
+          <form
+            action={async () => {
+              'use server';
+              await signOut({ redirectTo: '/' });
+            }}
+          >
+            <button type="submit" className="btn-ghost">
+              Sign out<span className="hidden sm:inline"> ({session.user?.email})</span>
+            </button>
+          </form>
+        </div>
       </header>
       <main
         className="flex-1 p-4 sm:p-6"

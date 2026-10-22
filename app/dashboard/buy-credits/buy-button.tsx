@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createOrder, type CreditPack } from './actions';
+import { createOrder, getOrderStatus, type CreditPack } from './actions';
 
 // Loaded on demand (not in <head> globally) -- most visits to the app
 // never touch checkout, no reason to pull in Razorpay's script on every
@@ -19,6 +19,18 @@ function loadRazorpayScript(): Promise<void> {
   });
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Polls for up to ~15s (10 tries, 1.5s apart) -- the webhook usually lands
+// within a second or two, but this doesn't claim success until the order
+// is actually confirmed PAID server-side, never on a blind timeout guess.
+const POLL_ATTEMPTS = 10;
+const POLL_INTERVAL_MS = 1500;
+
+type Status = 'idle' | 'loading' | 'confirming' | 'success' | 'delayed' | 'error';
+
 export function BuyButton({
   pack,
   label,
@@ -31,12 +43,44 @@ export function BuyButton({
   name: string;
 }) {
   const router = useRouter();
-  const [status, setStatus] = useState<'idle' | 'loading' | 'processing' | 'error'>('idle');
+  const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [creditsAdded, setCreditsAdded] = useState<number | null>(null);
+
+  async function confirmPurchase(orderId: string) {
+    setStatus('confirming');
+    for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt++) {
+      await sleep(POLL_INTERVAL_MS);
+      try {
+        const order = await getOrderStatus(orderId);
+        if (order.status === 'PAID') {
+          setCreditsAdded(order.credits);
+          setStatus('success');
+          router.refresh();
+          // Back to a normal "Buy" button after a few seconds, so another
+          // purchase is still possible without a page reload.
+          setTimeout(() => setStatus('idle'), 4000);
+          return;
+        }
+        if (order.status === 'FAILED') {
+          setStatus('error');
+          setError('Payment failed. You have not been charged.');
+          return;
+        }
+      } catch {
+        // A transient check failure isn't itself a failed purchase --
+        // keep polling rather than giving up on one bad request.
+      }
+    }
+    // Genuinely still pending after ~15s -- rare (webhook delay, Razorpay
+    // retry backoff), but don't claim success we haven't confirmed.
+    setStatus('delayed');
+  }
 
   async function handleClick() {
     setStatus('loading');
     setError(null);
+    setCreditsAdded(null);
     try {
       const [order] = await Promise.all([createOrder(pack), loadRazorpayScript()]);
       if (!window.Razorpay) throw new Error('Could not load the payment widget.');
@@ -50,19 +94,15 @@ export function BuyButton({
         description: `${label} -- ${order.credits} generations`,
         prefill: { email, name },
         theme: { color: '#6D28D9' },
-        // The payment is only actually granted server-side once our
-        // webhook verifies it with Razorpay directly (see
-        // PaymentsService.handleWebhook) -- this handler is UX feedback
-        // for the person waiting, not what credits the account. Refresh
-        // after a short delay to give the webhook time to land; worst
-        // case they see the old balance for a few seconds and can
-        // refresh again themselves.
+        // Credits are only actually granted server-side once our webhook
+        // verifies the payment with Razorpay directly -- this handler
+        // just kicks off polling for that confirmation, it never grants
+        // anything itself.
         handler: () => {
-          setStatus('processing');
-          setTimeout(() => router.refresh(), 2500);
+          void confirmPurchase(order.orderId);
         },
         modal: {
-          ondismiss: () => setStatus('idle'),
+          ondismiss: () => setStatus((s) => (s === 'loading' ? 'idle' : s)),
         },
       });
       razorpay.on('payment.failed', () => {
@@ -81,13 +121,21 @@ export function BuyButton({
       <button
         type="button"
         onClick={handleClick}
-        disabled={status === 'loading' || status === 'processing'}
-        className="btn-primary w-full"
+        disabled={status === 'loading' || status === 'confirming'}
+        className={status === 'success' ? 'btn-primary w-full bg-green-600 hover:bg-green-600' : 'btn-primary w-full'}
       >
         {status === 'loading' && 'Starting checkout...'}
-        {status === 'processing' && 'Payment received -- crediting your account...'}
+        {status === 'confirming' && 'Confirming payment...'}
+        {status === 'success' && `✓ ${creditsAdded} credits added!`}
+        {status === 'delayed' && 'Buy ' + label}
         {(status === 'idle' || status === 'error') && `Buy ${label}`}
       </button>
+      {status === 'delayed' && (
+        <p className="text-xs text-amber-700">
+          Payment received -- your credits are taking a little longer than usual to appear.
+          They&apos;ll show up shortly; refresh if they don&apos;t.
+        </p>
+      )}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

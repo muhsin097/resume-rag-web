@@ -102,9 +102,11 @@ export function MissingKeywordsPanel({
               </li>
             ))}
           </ul>
-          <p className="text-xs muted">
+          <p className="text-xs text-amber-900">
             We only add keywords that genuinely fit your background -- unrelated ones are
-            skipped automatically. This regenerates your resume and uses 1 generation credit.
+            skipped automatically, with an explanation why. Either way, this regenerates your
+            resume and <strong>uses 1 generation credit, even if every keyword above gets
+            skipped</strong>.
           </p>
           <div className="flex items-center gap-3">
             <button

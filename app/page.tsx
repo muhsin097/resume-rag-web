@@ -266,13 +266,29 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 pb-20 text-center">
+      <section className="mx-auto max-w-3xl space-y-6 px-6 pb-20 text-center">
         <Link
           href="/register"
           className="btn-primary inline-flex px-6 py-2.5 text-base"
         >
           Try for free
         </Link>
+        <a
+          href="https://www.producthunt.com/products/cease-to-resume?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cease-to-resume"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- third-party
+              tracked embed widget (UTM params + dynamic SVG), not a local
+              asset next/image can usefully optimize */}
+          <img
+            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1288937&theme=light"
+            alt="Cease to Resume - Tailored Resume Maker | Product Hunt"
+            width={250}
+            height={54}
+          />
+        </a>
       </section>
     </main>
   );

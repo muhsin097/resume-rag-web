@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { apiFetch } from '@/lib/api';
 
 export interface ResumeSection {
@@ -69,6 +70,14 @@ export async function generateResume(
   if (!response.ok) {
     return { error: data?.message ?? 'Could not generate resume.' };
   }
+
+  // A successful generation always decrements creditsBalance server-side
+  // (see reserveGenerationCredit) -- without this, both this page's "N
+  // remaining" card and the credits badge in dashboard/layout.tsx (a
+  // server component, same as this one) keep rendering the stale balance
+  // from whenever they last loaded. 'layout' revalidates the shared
+  // dashboard layout the badge lives in, not just this page.
+  revalidatePath('/dashboard', 'layout');
 
   return { generation: data };
 }

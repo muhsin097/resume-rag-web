@@ -28,6 +28,9 @@ export async function regenerateResumeGeneration(
     return { error: data?.message ?? 'Could not regenerate.' };
   }
 
-  revalidatePath('/dashboard/history');
+  // 'layout' revalidates the shared dashboard layout too (where the
+  // credits badge lives), not just this page -- a regenerate decrements
+  // the same creditsBalance a fresh generation does.
+  revalidatePath('/dashboard', 'layout');
   return { success: true };
 }

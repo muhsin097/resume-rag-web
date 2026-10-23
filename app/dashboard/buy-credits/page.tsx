@@ -1,9 +1,16 @@
-import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { apiFetchJson, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { BuyButton } from './buy-button';
 import type { CreditPack } from './actions';
 
 export const instant = false;
+
+interface Me {
+  email: string;
+  name: string;
+  plan: 'FREE' | 'PREMIUM';
+  creditsBalance: number;
+}
 
 // Display-only mirror of CREDIT_PACKS in resume-rag-api -- the backend
 // re-derives price/credits from the pack name on every order, so a stale
@@ -17,14 +24,13 @@ const PACKS: { pack: CreditPack; label: string; priceRupees: number; credits: nu
 ];
 
 export default async function BuyCreditsPage() {
-  let meRes;
+  let me: Me;
   try {
-    meRes = await apiFetch('/users/me');
+    me = await apiFetchJson<Me>('/users/me');
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
     throw err;
   }
-  const me = await meRes.json();
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">

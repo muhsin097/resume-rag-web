@@ -1,19 +1,23 @@
 import Link from 'next/link';
-import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { apiFetchJson, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { GenerateForm } from './generate-form';
 
 export const instant = false;
 
+interface Me {
+  plan: 'FREE' | 'PREMIUM';
+  creditsBalance: number;
+}
+
 export default async function GeneratePage() {
-  let meRes;
+  let me: Me;
   try {
-    meRes = await apiFetch('/users/me');
+    me = await apiFetchJson<Me>('/users/me');
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
     throw err;
   }
-  const me = await meRes.json();
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { apiFetchJson, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { deleteExperienceItem, setJobSearchEnabled } from './actions';
 import { ImportResumeSection } from './import-resume-section';
@@ -168,21 +168,21 @@ function AchievementsCard({ items }: { items: ExperienceItem[] }) {
 }
 
 export default async function ProfilePage() {
-  let itemsRes, meRes, generationsRes;
+  let items: ExperienceItem[], me: Me, generationCount: number;
   try {
-    [itemsRes, meRes, generationsRes] = await Promise.all([
-      apiFetch('/experience-items'),
-      apiFetch('/users/me'),
+    const [itemsResult, meResult, generationsResult] = await Promise.all([
+      apiFetchJson<ExperienceItem[]>('/experience-items'),
+      apiFetchJson<Me>('/users/me'),
       // limit=1 -- only the `total` count is needed here, not the rows.
-      apiFetch('/resume-generations?limit=1'),
+      apiFetchJson<{ total: number }>('/resume-generations?limit=1'),
     ]);
+    items = itemsResult;
+    me = meResult;
+    generationCount = generationsResult.total;
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
     throw err;
   }
-  const items: ExperienceItem[] = await itemsRes.json();
-  const me: Me = await meRes.json();
-  const { total: generationCount }: { total: number } = await generationsRes.json();
 
   const mainGroups = MAIN_GROUPS.map((group) => ({
     ...group,

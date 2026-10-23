@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { apiFetch, isApiUnavailable } from '@/lib/api';
+import { apiFetchJson, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
 import { RegenerateButton } from './regenerate-button';
 import { ResumePreview } from '../resume-preview';
@@ -65,14 +65,15 @@ export default async function HistoryPage({
   const { page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  let res;
+  let data: PaginatedGenerations;
   try {
-    res = await apiFetch(`/resume-generations?page=${page}&limit=${PAGE_SIZE}`);
+    data = await apiFetchJson<PaginatedGenerations>(
+      `/resume-generations?page=${page}&limit=${PAGE_SIZE}`,
+    );
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
     throw err;
   }
-  const data: PaginatedGenerations = await res.json();
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">

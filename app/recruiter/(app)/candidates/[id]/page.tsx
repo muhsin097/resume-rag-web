@@ -46,6 +46,15 @@ export default async function CandidateProfilePage({
   if (res.status === 404) {
     notFound();
   }
+  // Any other non-2xx (401, 500, ...) parses as a JSON error body, not a
+  // CandidateDetail -- trusting it as one crashes later and more
+  // confusingly, e.g. at the .map() over a field that doesn't exist.
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(
+      `Request to /recruiter/candidates/${id} failed with ${res.status}${body?.message ? `: ${body.message}` : ''}`,
+    );
+  }
   const candidate: CandidateDetail = await res.json();
 
   const grouped = new Map<string, ExperienceItem[]>();

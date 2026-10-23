@@ -36,3 +36,28 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
 export function isApiUnavailable(error: unknown): boolean {
   return error instanceof Error && error.message === 'API_UNAVAILABLE';
 }
+
+// For Server Components that just need the data or a clear failure --
+// apiFetch alone returns the raw Response because some callers (server
+// actions that render an inline form error, like generateResume) want to
+// handle a non-ok response themselves rather than throw. A page that's
+// about to trust the parsed body as a specific shape (an array to
+// .filter(), an object to read fields off) doesn't have that option: an
+// unchecked 401/500 JSON error body (e.g. {message, statusCode}) parses
+// fine but isn't the shape the caller expects, and crashes later with a
+// confusing error at the point it's actually used (seen in production as
+// "TypeError: items.filter is not a function" from profile/page.tsx,
+// which gave no indication the real problem was an unchecked 401).
+// Throwing here instead surfaces a clear, Sentry-captured message at the
+// actual point of failure, and still bubbles to the nearest error.tsx
+// boundary exactly like any other unexpected error.
+export async function apiFetchJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await apiFetch(path, init);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(
+      `Request to ${path} failed with ${response.status}${body?.message ? `: ${body.message}` : ''}`,
+    );
+  }
+  return response.json() as Promise<T>;
+}

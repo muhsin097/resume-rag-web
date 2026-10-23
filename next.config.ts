@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  experimental: {
+    // Opts into Next's own agent-driven upgrade flow for future security
+    // advisories -- set as part of the 16.4.0 -> 16.4.2 security upgrade.
+    agentUpgrade: "security",
+  },
 };
 
 export default withSentryConfig(nextConfig, {

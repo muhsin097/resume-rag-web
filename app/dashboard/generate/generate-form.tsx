@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState, useTransition } from 'react';
-import { generateResume, addSkillToResume, rescoreResume, type Generation } from './actions';
+import { generateResume, addSkillsToResume, rescoreResume, type Generation } from './actions';
 import { highlightKeywords } from './highlight-keywords';
 import { MissingKeywordsPanel, type StagedSkill } from './missing-keywords-panel';
 import Link from 'next/link';
@@ -51,19 +51,16 @@ export function GenerateForm() {
     if (!generation) return;
     setAddSkillsError(null);
     startAddingSkills(async () => {
-      // Sequential, not Promise.all -- each call reads-then-writes the
-      // same generation row server-side, so concurrent calls could stomp
-      // each other's Skills additions.
-      let current = generation;
-      for (const skill of skills) {
-        const result = await addSkillToResume(current.id, skill.keyword, skill.saveToProfile);
-        if (result.error) {
-          setAddSkillsError(result.error);
-          return;
-        }
-        if (result.generation) current = result.generation;
+      // One request for the whole batch -- not one per skill. The
+      // backend batches the Voyage embed + Claude categorize calls for
+      // everything being saved to the profile, so this can't trip
+      // Voyage's per-minute rate limit the way looping used to.
+      const result = await addSkillsToResume(generation.id, skills);
+      if (result.error) {
+        setAddSkillsError(result.error);
+        return;
       }
-      setGeneration(current);
+      if (result.generation) setGeneration(result.generation);
       setRecentlyAddedSkills((prev) => [...prev, ...skills.map((s) => s.keyword)]);
       setScoreIsStale(true);
     });

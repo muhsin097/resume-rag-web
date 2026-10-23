@@ -75,23 +75,36 @@ export interface AddSkillState {
   generation?: Generation;
 }
 
+export interface SkillToAdd {
+  keyword: string;
+  saveToProfile: boolean;
+}
+
 // Free -- no LLM call, no credit charge (see
-// ResumeGenerationsService.addSkillToGeneration). Only the Skills section
-// and generatedContent change; fitScore/keywordCoverage are left exactly
-// as they were until the caller explicitly runs rescoreResume.
-export async function addSkillToResume(
+// ResumeGenerationsService.addSkillsToGeneration). Only the Skills
+// section and generatedContent change; fitScore/keywordCoverage are left
+// exactly as they were until the caller explicitly runs rescoreResume.
+//
+// Takes the whole batch in ONE request -- a previous version called this
+// once per staged keyword, which made the backend issue a separate
+// Voyage embedding request per keyword for every one being saved to the
+// profile. Staging 3-4 keywords could trip Voyage's free-tier
+// 3-requests/minute cap, silently losing whichever ones got
+// rate-limited even though the UI reported success for all of them.
+// Batching means exactly one Voyage call (and one Claude categorize
+// call) no matter how many keywords are staged at once.
+export async function addSkillsToResume(
   generationId: string,
-  keyword: string,
-  saveToProfile: boolean,
+  skills: SkillToAdd[],
 ): Promise<AddSkillState> {
   const response = await apiFetch(`/resume-generations/${generationId}/skills`, {
     method: 'POST',
-    body: JSON.stringify({ keyword, saveToProfile }),
+    body: JSON.stringify({ skills }),
   });
 
   const data = await response.json();
   if (!response.ok) {
-    return { error: data?.message ?? 'Could not add skill.' };
+    return { error: data?.message ?? 'Could not add skills.' };
   }
 
   // No credits spent, but the Skills section (and anyone else viewing

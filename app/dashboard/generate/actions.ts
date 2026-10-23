@@ -20,33 +20,25 @@ export interface StructuredResume {
   sections: ResumeSection[];
 }
 
-export interface KeywordResult {
-  keyword: string;
-  normalizedTitle: string;
-  approved: boolean;
+export interface Generation {
+  id: string;
+  jobDescription: string;
+  generatedContent: string;
+  structuredContent: StructuredResume | null;
+  // Two deliberately separate signals -- see generate-form.tsx for how
+  // they're displayed. fitScore is Claude's holistic judgment of overall
+  // candidate fit; keywordCoverage is a deterministic percentage of the
+  // JD's keywords this resume matches.
+  fitScore: number;
+  keywordCoverage: number;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  createdAt: string;
 }
 
 export interface GenerateResumeState {
   error?: string;
-  generation?: {
-    id: string;
-    jobDescription: string;
-    generatedContent: string;
-    structuredContent: StructuredResume | null;
-    // Two deliberately separate signals -- see generate-form.tsx for how
-    // they're displayed. fitScore is Claude's holistic judgment of overall
-    // candidate fit; keywordCoverage is a deterministic percentage of the
-    // JD's keywords this resume matches.
-    fitScore: number;
-    keywordCoverage: number;
-    matchedKeywords: string[];
-    missingKeywords: string[];
-    createdAt: string;
-    // Only present on a response to a request that included requestedSkills
-    // -- feedback on what happened to each one, not a stored fact of the
-    // generation itself.
-    keywordResults?: KeywordResult[];
-  };
+  generation?: Generation;
 }
 
 // Signature matches React's useActionState (prevState, formData) -- the
@@ -56,14 +48,10 @@ export async function generateResume(
   formData: FormData,
 ): Promise<GenerateResumeState> {
   const jobDescription = String(formData.get('jobDescription') ?? '');
-  const requestedSkillsRaw = formData.get('requestedSkills');
-  const requestedSkills = requestedSkillsRaw
-    ? (JSON.parse(String(requestedSkillsRaw)) as { keyword: string; saveToProfile: boolean }[])
-    : undefined;
 
   const response = await apiFetch('/resume-generations', {
     method: 'POST',
-    body: JSON.stringify({ jobDescription, requestedSkills }),
+    body: JSON.stringify({ jobDescription }),
   });
 
   const data = await response.json();
@@ -77,6 +65,60 @@ export async function generateResume(
   // server component, same as this one) keep rendering the stale balance
   // from whenever they last loaded. 'layout' revalidates the shared
   // dashboard layout the badge lives in, not just this page.
+  revalidatePath('/dashboard', 'layout');
+
+  return { generation: data };
+}
+
+export interface AddSkillState {
+  error?: string;
+  generation?: Generation;
+}
+
+// Free -- no LLM call, no credit charge (see
+// ResumeGenerationsService.addSkillToGeneration). Only the Skills section
+// and generatedContent change; fitScore/keywordCoverage are left exactly
+// as they were until the caller explicitly runs rescoreResume.
+export async function addSkillToResume(
+  generationId: string,
+  keyword: string,
+  saveToProfile: boolean,
+): Promise<AddSkillState> {
+  const response = await apiFetch(`/resume-generations/${generationId}/skills`, {
+    method: 'POST',
+    body: JSON.stringify({ keyword, saveToProfile }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    return { error: data?.message ?? 'Could not add skill.' };
+  }
+
+  // No credits spent, but the Skills section (and anyone else viewing
+  // this generation, e.g. History) should see the update.
+  revalidatePath('/dashboard/history');
+
+  return { generation: data };
+}
+
+export interface RescoreState {
+  error?: string;
+  generation?: Generation;
+}
+
+// 1 credit -- reruns only analyzeMatch against the generation's current
+// content, never the bullet-writing call (bullets can't be affected by a
+// Skills-only change).
+export async function rescoreResume(generationId: string): Promise<RescoreState> {
+  const response = await apiFetch(`/resume-generations/${generationId}/rescore`, {
+    method: 'POST',
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    return { error: data?.message ?? 'Could not recalculate score.' };
+  }
+
   revalidatePath('/dashboard', 'layout');
 
   return { generation: data };

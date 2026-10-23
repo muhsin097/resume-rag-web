@@ -2,27 +2,31 @@
 
 import { useState } from 'react';
 
-export interface RequestedSkill {
+export interface StagedSkill {
   keyword: string;
   saveToProfile: boolean;
 }
 
 interface MissingKeywordsPanelProps {
   missingKeywords: string[];
-  onSubmit: (requestedSkills: RequestedSkill[]) => void;
+  onSubmit: (skills: StagedSkill[]) => void;
+  pending: boolean;
 }
 
 // Each red "missing from the resume" chip doubles as a toggle: click it to
-// stage the keyword for the next regeneration (shows a checkmark instead of
-// "+"). The backend still decides whether a staged keyword is a genuine fit
-// for the candidate -- staging here just means "please ask about this one."
-// The parent unmounts this panel while a regeneration is pending (it shows
-// a full-page loader instead), so there's no in-component pending state.
+// stage the keyword for adding. Adding is free and immediate -- no AI
+// approval step -- but requires the candidate to explicitly confirm they
+// actually have each staged skill, the same honesty bar already implicit
+// in typing something into the Profile page directly. The parent is
+// responsible for a separate "Recalculate score" action once skills are
+// added; this panel only ever touches the Skills section.
 export function MissingKeywordsPanel({
   missingKeywords,
   onSubmit,
+  pending,
 }: MissingKeywordsPanelProps) {
   const [staged, setStaged] = useState<Map<string, boolean>>(new Map());
+  const [confirmed, setConfirmed] = useState(false);
 
   function toggle(keyword: string) {
     setStaged((prev) => {
@@ -34,6 +38,7 @@ export function MissingKeywordsPanel({
       }
       return next;
     });
+    setConfirmed(false);
   }
 
   function setSaveToProfile(keyword: string, value: boolean) {
@@ -52,7 +57,7 @@ export function MissingKeywordsPanel({
               key={keyword}
               type="button"
               onClick={() => toggle(keyword)}
-              title={isStaged ? 'Remove from this regeneration' : 'Add this keyword'}
+              title={isStaged ? 'Remove' : 'Add this keyword -- free'}
               className={`group inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition ${
                 isStaged
                   ? 'bg-[var(--accent)] text-white'
@@ -76,7 +81,7 @@ export function MissingKeywordsPanel({
         <div className="card-muted space-y-3 text-sm">
           <p className="font-medium">
             Add {stagedKeywords.length} keyword{stagedKeywords.length > 1 ? 's' : ''} to your
-            tailored resume?
+            Skills -- free, no credit used.
           </p>
           <ul className="space-y-2">
             {stagedKeywords.map((keyword) => (
@@ -102,30 +107,46 @@ export function MissingKeywordsPanel({
               </li>
             ))}
           </ul>
-          <p className="text-xs text-amber-900">
-            We only add keywords that genuinely fit your background -- unrelated ones are
-            skipped automatically, with an explanation why. Either way, this regenerates your
-            resume and <strong>uses 1 generation credit, even if every keyword above gets
-            skipped</strong>.
+          <label className="flex items-start gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              I confirm I have genuine hands-on experience with{' '}
+              {stagedKeywords.length > 1 ? 'all of the skills above' : 'this skill'}.
+            </span>
+          </label>
+          <p className="text-xs muted">
+            This only updates your Skills section -- it won&apos;t change your match score
+            until you recalculate it separately (1 credit).
           </p>
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() =>
+              disabled={!confirmed || pending}
+              onClick={() => {
                 onSubmit(
                   stagedKeywords.map((keyword) => ({
                     keyword,
                     saveToProfile: staged.get(keyword) ?? true,
                   })),
-                )
-              }
+                );
+                setStaged(new Map());
+                setConfirmed(false);
+              }}
               className="btn-primary"
             >
-              Add & regenerate
+              {pending ? 'Adding...' : 'Add keywords'}
             </button>
             <button
               type="button"
-              onClick={() => setStaged(new Map())}
+              onClick={() => {
+                setStaged(new Map());
+                setConfirmed(false);
+              }}
               className="link text-sm"
             >
               Cancel

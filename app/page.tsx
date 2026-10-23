@@ -66,7 +66,7 @@ const FAQS = [
   {
     question: 'Is Cease to Resume free?',
     answer:
-      'Yes -- every account gets 5 free tailored resume generations, no card required. Build your profile and try it on real job descriptions before deciding if you want more.',
+      'Yes -- every account gets 2 free tailored resume generations, no card required. Adding a missing skill to your resume is always free, too. Build your profile and try it on real job descriptions before deciding if you want more.',
   },
   {
     question: 'Will it invent things I haven’t actually done?',

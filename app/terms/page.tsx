@@ -42,7 +42,7 @@ export default function TermsPage() {
             generated resume before you send it to an employer.
           </p>
           <p>
-            Free accounts get 5 tailored resume generations. We may change
+            Free accounts get 2 tailored resume generations. We may change
             this limit, or what a premium plan includes, at any time.
           </p>
         </section>

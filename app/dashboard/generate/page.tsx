@@ -22,7 +22,8 @@ export default async function GeneratePage() {
           'Unlimited generations.'
         ) : (
           <>
-            {me.creditsBalance} generation{me.creditsBalance === 1 ? '' : 's'} remaining.{' '}
+            {me.creditsBalance} credit{me.creditsBalance === 1 ? '' : 's'} -- a full generation
+            uses 2, recalculating a score uses 1, adding a skill is free.{' '}
             <Link href="/dashboard/buy-credits" className="link">
               Buy more
             </Link>

@@ -1,9 +1,9 @@
 'use client';
 
-import { startTransition, useActionState } from 'react';
-import { generateResume } from './actions';
+import { useActionState, useEffect, useState, useTransition } from 'react';
+import { generateResume, addSkillToResume, rescoreResume, type Generation } from './actions';
 import { highlightKeywords } from './highlight-keywords';
-import { MissingKeywordsPanel, type RequestedSkill } from './missing-keywords-panel';
+import { MissingKeywordsPanel, type StagedSkill } from './missing-keywords-panel';
 import Link from 'next/link';
 import { ResumePreview } from '../resume-preview';
 import { FullPageLoader } from '../../components/full-page-loader';
@@ -19,23 +19,69 @@ function scoreColorClass(score: number): string {
 }
 
 export function GenerateForm() {
-  const [state, formAction, isPending] = useActionState(generateResume, {});
-  const generation = state.generation;
-  const keywordResults = generation?.keywordResults ?? [];
-  const approvedSkills = keywordResults.filter((r) => r.approved).map((r) => r.normalizedTitle);
-  const rejectedKeywords = keywordResults.filter((r) => !r.approved).map((r) => r.keyword);
+  const [state, formAction, isGenerating] = useActionState(generateResume, {});
 
-  function handleAddKeywords(requestedSkills: RequestedSkill[]) {
+  // Local copy of the current generation, separate from useActionState's
+  // own state -- addSkillToResume/rescoreResume aren't form submissions,
+  // they're plain server-action calls that need to update the same
+  // generation in place without re-running the (expensive, credited)
+  // generate flow.
+  const [generation, setGeneration] = useState<Generation | undefined>(state.generation);
+  const [recentlyAddedSkills, setRecentlyAddedSkills] = useState<string[]>([]);
+  // True once a skill has been added since the last score calculation --
+  // the Skills section is already updated, but fitScore/keywordCoverage
+  // still reflect the resume as it was before that addition.
+  const [scoreIsStale, setScoreIsStale] = useState(false);
+  const [addSkillsError, setAddSkillsError] = useState<string | null>(null);
+  const [rescoreError, setRescoreError] = useState<string | null>(null);
+  const [isAddingSkills, startAddingSkills] = useTransition();
+  const [isRescoring, startRescoring] = useTransition();
+
+  useEffect(() => {
+    if (state.generation) {
+      setGeneration(state.generation);
+      setRecentlyAddedSkills([]);
+      setScoreIsStale(false);
+      setAddSkillsError(null);
+      setRescoreError(null);
+    }
+  }, [state.generation]);
+
+  function handleAddKeywords(skills: StagedSkill[]) {
     if (!generation) return;
-    const formData = new FormData();
-    formData.set('jobDescription', generation.jobDescription);
-    formData.set('requestedSkills', JSON.stringify(requestedSkills));
-    // formAction must be invoked inside a transition when called directly
-    // (not via a real <form> submit) -- otherwise isPending never flips to
-    // true, so the loader never shows and the click looks like a no-op
-    // until the new generation silently replaces the old one.
-    startTransition(() => {
-      formAction(formData);
+    setAddSkillsError(null);
+    startAddingSkills(async () => {
+      // Sequential, not Promise.all -- each call reads-then-writes the
+      // same generation row server-side, so concurrent calls could stomp
+      // each other's Skills additions.
+      let current = generation;
+      for (const skill of skills) {
+        const result = await addSkillToResume(current.id, skill.keyword, skill.saveToProfile);
+        if (result.error) {
+          setAddSkillsError(result.error);
+          return;
+        }
+        if (result.generation) current = result.generation;
+      }
+      setGeneration(current);
+      setRecentlyAddedSkills((prev) => [...prev, ...skills.map((s) => s.keyword)]);
+      setScoreIsStale(true);
+    });
+  }
+
+  function handleRescore() {
+    if (!generation) return;
+    setRescoreError(null);
+    startRescoring(async () => {
+      const result = await rescoreResume(generation.id);
+      if (result.error) {
+        setRescoreError(result.error);
+        return;
+      }
+      if (result.generation) {
+        setGeneration(result.generation);
+        setScoreIsStale(false);
+      }
     });
   }
 
@@ -53,13 +99,13 @@ export function GenerateForm() {
             className="input"
           />
         </label>
-        <button type="submit" disabled={isPending} className="btn-primary">
-          {isPending ? 'Generating...' : 'Generate tailored resume'}
+        <button type="submit" disabled={isGenerating} className="btn-primary">
+          {isGenerating ? 'Generating...' : 'Generate tailored resume'}
         </button>
         {state.error && (
           <p className="text-sm text-red-600">
             {state.error}
-            {state.error.includes('No generation credits remaining') && (
+            {state.error.includes('generation credits') && (
               <>
                 {' '}
                 <Link href="/dashboard/buy-credits" className="link">
@@ -71,33 +117,22 @@ export function GenerateForm() {
         )}
       </form>
 
-      {isPending && (
+      {isGenerating && (
         <FullPageLoader label="Reading your profile and tailoring your resume..." />
       )}
 
-      {!isPending && generation && (
+      {!isGenerating && generation && (
         <div className="space-y-4">
-          {rejectedKeywords.length > 0 && (
-            <div className="card-muted text-sm text-amber-900">
-              Couldn&apos;t add {rejectedKeywords.join(', ')} --{' '}
-              {rejectedKeywords.length > 1 ? "they don't" : "it doesn't"} look like a
-              genuine fit based on your current profile, so we left{' '}
-              {rejectedKeywords.length > 1 ? 'them' : 'it'} out. If you genuinely have{' '}
-              {rejectedKeywords.length > 1 ? 'these skills' : 'this skill'}, add{' '}
-              {rejectedKeywords.length > 1 ? 'them' : 'it'} to your profile directly, then
-              try again.
-            </div>
-          )}
-          {approvedSkills.length > 0 && (
+          {recentlyAddedSkills.length > 0 && (
             <div className="card-muted text-sm text-green-900">
-              Added to your resume: {approvedSkills.join(', ')}
+              Added to your resume: {recentlyAddedSkills.join(', ')}
             </div>
           )}
           <div className="card flex flex-wrap items-center gap-4">
             <div className="flex flex-none items-center gap-3">
               <div className="flex flex-col items-center gap-1">
                 <div
-                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.keywordCoverage)}`}
+                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.keywordCoverage)} ${scoreIsStale ? 'opacity-50' : ''}`}
                 >
                   {generation.keywordCoverage}
                 </div>
@@ -105,14 +140,14 @@ export function GenerateForm() {
               </div>
               <div className="flex flex-col items-center gap-1">
                 <div
-                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.fitScore)}`}
+                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-semibold ${scoreColorClass(generation.fitScore)} ${scoreIsStale ? 'opacity-50' : ''}`}
                 >
                   {generation.fitScore}
                 </div>
                 <span className="text-xs muted">Overall fit</span>
               </div>
             </div>
-            <div className="space-y-1 text-sm">
+            <div className="min-w-0 flex-1 space-y-1 text-sm">
               <p className="font-medium">
                 Keyword coverage is how many of the job&apos;s key terms your resume matches.
                 Overall fit is Claude&apos;s broader read of how well your background fits the
@@ -125,11 +160,27 @@ export function GenerateForm() {
                 <span className="mr-1 inline-block h-2 w-2 rounded-full bg-red-500 align-middle" />
                 missing from the resume
               </p>
+              {scoreIsStale && (
+                <div className="card-muted flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
+                  <span>Scores above don&apos;t reflect the skills you just added yet.</span>
+                  <button
+                    type="button"
+                    onClick={handleRescore}
+                    disabled={isRescoring}
+                    className="btn-primary px-3 py-1 text-xs"
+                  >
+                    {isRescoring ? 'Recalculating...' : 'Recalculate score (1 credit)'}
+                  </button>
+                </div>
+              )}
+              {rescoreError && <p className="text-xs text-red-600">{rescoreError}</p>}
+              {addSkillsError && <p className="text-xs text-red-600">{addSkillsError}</p>}
               {generation.missingKeywords.length > 0 && (
                 <MissingKeywordsPanel
                   key={generation.id}
                   missingKeywords={generation.missingKeywords}
                   onSubmit={handleAddKeywords}
+                  pending={isAddingSkills}
                 />
               )}
             </div>
@@ -181,7 +232,7 @@ export function GenerateForm() {
               {generation.structuredContent ? (
                 <ResumePreview
                   resume={generation.structuredContent}
-                  highlightedSkills={approvedSkills}
+                  highlightedSkills={recentlyAddedSkills}
                 />
               ) : (
                 <pre className="whitespace-pre-wrap font-sans text-sm">

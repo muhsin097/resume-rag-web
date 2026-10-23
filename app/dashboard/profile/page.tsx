@@ -210,7 +210,7 @@ export default async function ProfilePage() {
               'Unlimited generations'
             ) : (
               <>
-                {me.creditsBalance} generation{me.creditsBalance === 1 ? '' : 's'} remaining
+                {me.creditsBalance} credit{me.creditsBalance === 1 ? '' : 's'}
                 {me.creditsExpireAt && me.creditsBalance > 0
                   ? ` (expires ${formatExpiry(me.creditsExpireAt)})`
                   : ''}

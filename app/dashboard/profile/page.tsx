@@ -11,8 +11,15 @@ import { DeleteAccountSection } from './delete-account-section';
 import { CollapsibleSection } from './collapsible-section';
 import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
+import { LegacyDatesBanner } from './legacy-dates-banner';
 
 export const instant = false;
+
+// The add_is_current migration's own run time -- see its migration.sql
+// comment. Any experience row created and never touched since before
+// this moment had its isCurrent backfilled by the migration, not
+// confirmed by the candidate.
+const IS_CURRENT_MIGRATION_CUTOFF = new Date('2026-10-21T21:20:51Z');
 
 type ExperienceType =
   | 'EXPERIENCE'
@@ -29,6 +36,10 @@ interface ExperienceItem {
   title: string;
   organization: string | null;
   description: string | null;
+  isCurrent: boolean;
+  endDate: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Me {
@@ -184,6 +195,22 @@ export default async function ProfilePage() {
     throw err;
   }
 
+  // Rows that predate the isCurrent column (see the add_is_current
+  // migration) were backfilled isCurrent=true to preserve their existing
+  // "Present" display -- a safe default, but never something the
+  // candidate actually confirmed. Only rows untouched since before that
+  // migration count: createdAt alone isn't enough (a row created before
+  // the migration but edited afterward already reflects a real, recent
+  // decision), so both createdAt and updatedAt must predate the cutoff.
+  const legacyDateItems = items.filter(
+    (item) =>
+      (item.type === 'EXPERIENCE' || item.type === 'EDUCATION' || item.type === 'PROJECT') &&
+      item.isCurrent &&
+      !item.endDate &&
+      new Date(item.createdAt) < IS_CURRENT_MIGRATION_CUTOFF &&
+      new Date(item.updatedAt) < IS_CURRENT_MIGRATION_CUTOFF,
+  );
+
   const mainGroups = MAIN_GROUPS.map((group) => ({
     ...group,
     items: items.filter((item) => item.type === group.type),
@@ -242,6 +269,8 @@ export default async function ProfilePage() {
           </button>
         </form>
       </section>
+
+      {legacyDateItems.length > 0 && <LegacyDatesBanner items={legacyDateItems} />}
 
       <GettingStartedChecklist
         hasExperience={items.length > 0}

@@ -57,6 +57,42 @@ export async function addTagItems(type: 'SKILL' | 'LANGUAGE', titles: string[]) 
   revalidatePath('/dashboard/profile');
 }
 
+// Resaves isCurrent:true with no other change -- the point isn't to
+// alter the row, it's to bump updatedAt past the migration cutoff so
+// this item drops out of the "needs confirmation" banner now that the
+// candidate has actually looked at it and confirmed it's genuinely
+// still ongoing.
+export async function confirmStillOngoing(id: string) {
+  const response = await apiFetch(`/experience-items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isCurrent: true }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Could not confirm this item.');
+  }
+
+  revalidatePath('/dashboard/profile');
+}
+
+// The other resolution from the legacy-dates banner: the role/program
+// actually ended, just not on a date anyone had recorded. Sets a real
+// endDate and flips isCurrent off in one PATCH -- same update() call
+// that drops the item out of the banner (see confirmStillOngoing).
+export async function setItemEndDate(id: string, endDate: string) {
+  const response = await apiFetch(`/experience-items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ endDate, isCurrent: false }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.message ?? 'Could not save the end date.');
+  }
+
+  revalidatePath('/dashboard/profile');
+}
+
 export async function deleteExperienceItem(id: string) {
   const response = await apiFetch(`/experience-items/${id}`, {
     method: 'DELETE',

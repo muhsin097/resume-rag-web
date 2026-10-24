@@ -12,6 +12,8 @@ import { CollapsibleSection } from './collapsible-section';
 import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
 import { LegacyDatesBanner } from './legacy-dates-banner';
+import { PortfolioSection } from './portfolio-section';
+import { InterestedContactsSection } from './interested-contacts-section';
 
 export const instant = false;
 
@@ -42,6 +44,14 @@ interface ExperienceItem {
   updatedAt: string;
 }
 
+interface PortfolioLead {
+  id: string;
+  visitorEmail: string;
+  visitorName: string | null;
+  message: string | null;
+  createdAt: string;
+}
+
 interface Me {
   name: string;
   email: string;
@@ -52,6 +62,8 @@ interface Me {
   githubUrl: string | null;
   websiteUrl: string | null;
   jobSearchEnabled: boolean;
+  portfolioEnabled: boolean;
+  portfolioSlug: string | null;
   plan: 'FREE' | 'PREMIUM';
   freeGenerationsUsed: number;
   creditsBalance: number;
@@ -179,17 +191,22 @@ function AchievementsCard({ items }: { items: ExperienceItem[] }) {
 }
 
 export default async function ProfilePage() {
-  let items: ExperienceItem[], me: Me, generationCount: number;
+  let items: ExperienceItem[], me: Me, generationCount: number, portfolioLeads: PortfolioLead[];
   try {
-    const [itemsResult, meResult, generationsResult] = await Promise.all([
+    const [itemsResult, meResult, generationsResult, leadsResult] = await Promise.all([
       apiFetchJson<ExperienceItem[]>('/experience-items'),
       apiFetchJson<Me>('/users/me'),
       // limit=1 -- only the `total` count is needed here, not the rows.
       apiFetchJson<{ total: number }>('/resume-generations?limit=1'),
+      // Fetched regardless of the portfolio's current enabled state --
+      // leads already received stay visible even after someone later
+      // turns their portfolio off.
+      apiFetchJson<PortfolioLead[]>('/users/me/portfolio-leads'),
     ]);
     items = itemsResult;
     me = meResult;
     generationCount = generationsResult.total;
+    portfolioLeads = leadsResult;
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
     throw err;
@@ -278,6 +295,16 @@ export default async function ProfilePage() {
       />
 
       <AboutYouSection me={me} />
+
+      <PortfolioSection
+        name={me.name}
+        portfolioEnabled={me.portfolioEnabled}
+        portfolioSlug={me.portfolioSlug}
+      />
+
+      {(me.portfolioEnabled || portfolioLeads.length > 0) && (
+        <InterestedContactsSection leads={portfolioLeads} />
+      )}
 
       <ImportResumeSection />
 

@@ -1,7 +1,8 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { apiFetch } from '@/lib/api';
+import { portfolioCacheTag } from '../../p/[slug]/cache-tag';
 
 export type ExtractedItemType =
   | 'EXPERIENCE'
@@ -136,4 +137,16 @@ export async function saveExtractedResume(
   }
 
   revalidatePath('/dashboard/profile');
+
+  try {
+    const meRes = await apiFetch('/users/me');
+    if (meRes.ok) {
+      const me = await meRes.json();
+      if (me.portfolioEnabled && me.portfolioSlug) updateTag(portfolioCacheTag(me.portfolioSlug));
+    }
+  } catch {
+    // Best-effort -- see revalidatePortfolioForCurrentUser in actions.ts
+    // for the full reasoning; same pattern, inlined here since this file
+    // only needs it in this one place.
+  }
 }

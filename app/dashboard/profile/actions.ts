@@ -1,8 +1,30 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { apiFetch } from '@/lib/api';
 import { signOut } from '@/auth';
+import { portfolioCacheTag } from '../../p/[slug]/cache-tag';
+
+// Called after any edit that could change what a public portfolio shows
+// (a new/removed experience item, a bio/contact change, a skill added).
+// getPortfolioData() auto-revalidates hourly regardless, but invalidating
+// explicitly means an edit shows up on the public page right away instead
+// of up to an hour later -- worth the one extra lightweight request given
+// how often a candidate edits their profile right before sharing the
+// link. Best-effort: a failure here shouldn't fail the edit that
+// triggered it.
+async function revalidatePortfolioForCurrentUser(): Promise<void> {
+  try {
+    const res = await apiFetch('/users/me');
+    if (!res.ok) return;
+    const me = await res.json();
+    if (me.portfolioEnabled && me.portfolioSlug) {
+      updateTag(portfolioCacheTag(me.portfolioSlug));
+    }
+  } catch {
+    // Best-effort -- see comment above.
+  }
+}
 
 export async function createExperienceItem(formData: FormData) {
   const payload: Record<string, string | boolean> = {
@@ -34,6 +56,7 @@ export async function createExperienceItem(formData: FormData) {
   }
 
   revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
 }
 
 // Skills/languages are one-word(ish) facts with no description/org/dates --
@@ -55,6 +78,7 @@ export async function addTagItems(type: 'SKILL' | 'LANGUAGE', titles: string[]) 
   }
 
   revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
 }
 
 // Resaves isCurrent:true with no other change -- the point isn't to
@@ -91,6 +115,7 @@ export async function setItemEndDate(id: string, endDate: string) {
   }
 
   revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
 }
 
 export async function deleteExperienceItem(id: string) {
@@ -103,6 +128,7 @@ export async function deleteExperienceItem(id: string) {
   }
 
   revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
 }
 
 export async function updateContactInfo(formData: FormData) {
@@ -132,6 +158,7 @@ export async function updateContactInfo(formData: FormData) {
   }
 
   revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
 }
 
 export async function setJobSearchEnabled(enabled: boolean) {
@@ -145,6 +172,53 @@ export async function setJobSearchEnabled(enabled: boolean) {
   }
 
   revalidatePath('/dashboard/profile');
+}
+
+// Toggling OFF needs to take effect immediately (someone disabling their
+// portfolio is often doing it specifically to pull it down right now, not
+// "eventually") -- so this always explicitly invalidates the public
+// page's cache tag, rather than relying on the hourly auto-revalidation
+// getPortfolioData() otherwise uses.
+export async function setPortfolioEnabled(enabled: boolean) {
+  const response = await apiFetch('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ portfolioEnabled: enabled }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Could not update portfolio visibility');
+  }
+
+  const me = await response.json();
+  if (me.portfolioSlug) updateTag(portfolioCacheTag(me.portfolioSlug));
+
+  revalidatePath('/dashboard/profile');
+}
+
+export interface PortfolioSlugState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function updatePortfolioSlug(
+  _prevState: PortfolioSlugState,
+  formData: FormData,
+): Promise<PortfolioSlugState> {
+  const slug = String(formData.get('portfolioSlug') ?? '').trim();
+
+  const response = await apiFetch('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ portfolioSlug: slug }),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    return { error: data?.message?.[0] ?? data?.message ?? 'Could not update your portfolio URL.' };
+  }
+
+  if (data?.portfolioSlug) updateTag(portfolioCacheTag(data.portfolioSlug));
+  revalidatePath('/dashboard/profile');
+  return { success: true };
 }
 
 // Soft-deletes on the API side (profile data + experience items/history

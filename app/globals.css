@@ -577,6 +577,22 @@ html {
     box-shadow: 0 16px 32px -16px rgba(0, 0, 0, 0.22);
   }
 
+  .featured-project-card {
+    position: relative;
+    border-radius: 1.1rem;
+    border: 1px solid var(--accent);
+    background: linear-gradient(135deg, var(--accent-soft), var(--surface) 65%);
+    padding: 1.75rem 1.5rem;
+  }
+  .featured-project-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
   /* Contact section: form + a narrower aside (social links, reassurance
      copy) -- no email/phone shown here, deliberately, matching this
      app's existing privacy posture (the owner's real contact details

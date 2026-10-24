@@ -16,6 +16,10 @@ export interface PortfolioExperienceItem {
   startDate: string | null;
   endDate: string | null;
   isCurrent: boolean;
+  // Only ever true for a PROJECT -- the one project the candidate chose
+  // to feature. See ExperienceItemsService.update (API) for the "at
+  // most one per user" enforcement.
+  isHighlighted: boolean;
 }
 
 export interface PortfolioProfile {

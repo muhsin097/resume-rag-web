@@ -131,16 +131,34 @@ function Timeline({ items }: { items: PortfolioExperienceItem[] }) {
 }
 
 // Card grid rather than a stacked text list -- projects are the section
-// that benefits most from reading like a showcase.
+// that benefits most from reading like a showcase. The one project the
+// candidate chose to feature (see ExperienceItemsService.update, "at
+// most one per user") gets a bigger standalone card above the rest.
 function ProjectGrid({ items }: { items: PortfolioExperienceItem[] }) {
+  const highlighted = items.find((item) => item.isHighlighted);
+  const rest = highlighted ? items.filter((item) => item.id !== highlighted.id) : items;
+
   return (
-    <div className="project-grid">
-      {items.map((item, i) => (
-        <Reveal key={item.id} delayMs={Math.min(i, 5) * 70} className="project-card">
-          <p className="text-base font-semibold">{item.title}</p>
-          {item.description && <p className="mt-1.5 text-sm muted whitespace-pre-wrap">{item.description}</p>}
+    <div className="space-y-5">
+      {highlighted && (
+        <Reveal className="featured-project-card">
+          <p className="featured-project-label">Featured project</p>
+          <p className="mt-1.5 text-xl font-bold">{highlighted.title}</p>
+          {highlighted.description && (
+            <p className="mt-2 text-sm muted whitespace-pre-wrap">{highlighted.description}</p>
+          )}
         </Reveal>
-      ))}
+      )}
+      {rest.length > 0 && (
+        <div className="project-grid">
+          {rest.map((item, i) => (
+            <Reveal key={item.id} delayMs={Math.min(i, 5) * 70} className="project-card">
+              <p className="text-base font-semibold">{item.title}</p>
+              {item.description && <p className="mt-1.5 text-sm muted whitespace-pre-wrap">{item.description}</p>}
+            </Reveal>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

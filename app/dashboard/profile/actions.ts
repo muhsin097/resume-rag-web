@@ -118,6 +118,24 @@ export async function setItemEndDate(id: string, endDate: string) {
   await revalidatePortfolioForCurrentUser();
 }
 
+// At most one highlighted project at a time -- enforced server-side
+// (ExperienceItemsService.update unsets any previous one in the same
+// transaction), this just triggers that and refreshes both pages.
+export async function setProjectHighlighted(id: string, highlighted: boolean) {
+  const response = await apiFetch(`/experience-items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isHighlighted: highlighted }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.message ?? 'Could not update the highlighted project.');
+  }
+
+  revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
+}
+
 export async function deleteExperienceItem(id: string) {
   const response = await apiFetch(`/experience-items/${id}`, {
     method: 'DELETE',

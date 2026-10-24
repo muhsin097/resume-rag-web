@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { apiFetchJson, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
-import { deleteExperienceItem, setJobSearchEnabled } from './actions';
+import { deleteExperienceItem, setJobSearchEnabled, setProjectHighlighted } from './actions';
 import { ImportResumeSection } from './import-resume-section';
 import { AddExperienceItemForm } from './add-experience-item-form';
 import { AddTagListForm } from './add-tag-list-form';
@@ -39,6 +39,7 @@ interface ExperienceItem {
   organization: string | null;
   description: string | null;
   isCurrent: boolean;
+  isHighlighted: boolean;
   endDate: string | null;
   createdAt: string;
   updatedAt: string;
@@ -146,20 +147,37 @@ function ItemCard({
 }) {
   return (
     <li
-      className={`card-muted flex items-start justify-between ${TYPE_BORDER_CLASSES[item.type]}`}
+      className={`card-muted flex items-start justify-between gap-3 ${TYPE_BORDER_CLASSES[item.type]}`}
     >
-      <div>
+      <div className="min-w-0">
         <p className="font-medium">
           {item.title}
           {item.organization ? ` at ${item.organization}` : ''}
+          {item.isHighlighted && (
+            <span
+              className="chip ml-2"
+              style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent)', color: 'var(--accent)' }}
+            >
+              Featured
+            </span>
+          )}
         </p>
         {item.description && <p className="text-sm muted">{item.description}</p>}
       </div>
-      <form action={deleteExperienceItem.bind(null, item.id)}>
-        <button type="submit" className="text-sm text-red-600 hover:underline">
-          Delete
-        </button>
-      </form>
+      <div className="flex shrink-0 items-center gap-3">
+        {item.type === 'PROJECT' && (
+          <form action={setProjectHighlighted.bind(null, item.id, !item.isHighlighted)}>
+            <button type="submit" className="text-sm link whitespace-nowrap">
+              {item.isHighlighted ? 'Unfeature' : 'Feature on portfolio'}
+            </button>
+          </form>
+        )}
+        <form action={deleteExperienceItem.bind(null, item.id)}>
+          <button type="submit" className="text-sm text-red-600 hover:underline">
+            Delete
+          </button>
+        </form>
+      </div>
     </li>
   );
 }

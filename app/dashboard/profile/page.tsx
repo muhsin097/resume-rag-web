@@ -13,6 +13,7 @@ import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
 import { LegacyDatesBanner } from './legacy-dates-banner';
 import { PortfolioSection } from './portfolio-section';
+import { PortfolioNudgeBanner } from './portfolio-nudge-banner';
 
 export const instant = false;
 
@@ -292,6 +293,8 @@ export default async function ProfilePage() {
       </section>
 
       {legacyDateItems.length > 0 && <LegacyDatesBanner items={legacyDateItems} />}
+
+      {!me.portfolioEnabled && items.length > 0 && <PortfolioNudgeBanner name={me.name} />}
 
       <GettingStartedChecklist
         hasExperience={items.length > 0}

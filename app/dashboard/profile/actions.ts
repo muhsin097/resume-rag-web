@@ -213,6 +213,37 @@ export async function setPortfolioEnabled(enabled: boolean) {
   revalidatePath('/dashboard/profile');
 }
 
+// One-click path from the nudge banner: enable + claim a slug in a
+// single request, rather than sending someone through the two-step
+// enable-then-save-slug flow in PortfolioSection just to turn it on for
+// the first time. Falls back to a short random suffix once if the
+// suggested slug is already taken, rather than failing the whole
+// one-click flow outright over a name collision.
+export async function enablePortfolioQuickstart(suggestedSlug: string) {
+  async function tryEnable(slug: string) {
+    return apiFetch('/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ portfolioEnabled: true, portfolioSlug: slug }),
+    });
+  }
+
+  let response = await tryEnable(suggestedSlug);
+  if (response.status === 409) {
+    response = await tryEnable(`${suggestedSlug}-${Math.random().toString(36).slice(2, 6)}`);
+  }
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(
+      data?.message?.[0] ?? data?.message ?? 'Could not enable your portfolio -- try the section below instead.',
+    );
+  }
+
+  const me = await response.json();
+  if (me.portfolioSlug) updateTag(portfolioCacheTag(me.portfolioSlug));
+  revalidatePath('/dashboard/profile');
+}
+
 export interface PortfolioSlugState {
   error?: string;
   success?: boolean;

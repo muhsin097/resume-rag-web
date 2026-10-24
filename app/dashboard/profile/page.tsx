@@ -13,7 +13,6 @@ import { ItemGroup } from './item-group';
 import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
 import { LegacyDatesBanner } from './legacy-dates-banner';
 import { PortfolioSection } from './portfolio-section';
-import { InterestedContactsSection } from './interested-contacts-section';
 
 export const instant = false;
 
@@ -43,14 +42,6 @@ interface ExperienceItem {
   endDate: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-interface PortfolioLead {
-  id: string;
-  visitorEmail: string;
-  visitorName: string | null;
-  message: string | null;
-  createdAt: string;
 }
 
 interface Me {
@@ -209,22 +200,17 @@ function AchievementsCard({ items }: { items: ExperienceItem[] }) {
 }
 
 export default async function ProfilePage() {
-  let items: ExperienceItem[], me: Me, generationCount: number, portfolioLeads: PortfolioLead[];
+  let items: ExperienceItem[], me: Me, generationCount: number;
   try {
-    const [itemsResult, meResult, generationsResult, leadsResult] = await Promise.all([
+    const [itemsResult, meResult, generationsResult] = await Promise.all([
       apiFetchJson<ExperienceItem[]>('/experience-items'),
       apiFetchJson<Me>('/users/me'),
       // limit=1 -- only the `total` count is needed here, not the rows.
       apiFetchJson<{ total: number }>('/resume-generations?limit=1'),
-      // Fetched regardless of the portfolio's current enabled state --
-      // leads already received stay visible even after someone later
-      // turns their portfolio off.
-      apiFetchJson<PortfolioLead[]>('/users/me/portfolio-leads'),
     ]);
     items = itemsResult;
     me = meResult;
     generationCount = generationsResult.total;
-    portfolioLeads = leadsResult;
   } catch (err) {
     if (isApiUnavailable(err)) return <ApiDownMessage />;
     throw err;
@@ -319,10 +305,6 @@ export default async function ProfilePage() {
         portfolioEnabled={me.portfolioEnabled}
         portfolioSlug={me.portfolioSlug}
       />
-
-      {(me.portfolioEnabled || portfolioLeads.length > 0) && (
-        <InterestedContactsSection leads={portfolioLeads} />
-      )}
 
       <ImportResumeSection />
 

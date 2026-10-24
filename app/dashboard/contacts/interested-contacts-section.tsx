@@ -10,16 +10,16 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-// Only rendered when the portfolio is enabled (see page.tsx) -- a visitor
-// can't submit a lead against a disabled/nonexistent portfolio in the
-// first place, so an empty list here just means nobody's reached out yet.
+// Only reachable if the portfolio is (or was) enabled -- a visitor can't
+// submit a lead against a disabled/nonexistent portfolio in the first
+// place, so an empty list here just means nobody's reached out yet.
 export function InterestedContactsSection({ leads }: { leads: Lead[] }) {
   return (
     <section className="card space-y-3">
       <div>
-        <h2 className="font-semibold">
+        <h1 className="text-xl font-semibold">
           Interested contacts {leads.length > 0 ? `(${leads.length})` : ''}
-        </h2>
+        </h1>
         <p className="text-sm muted">People who reached out from your public portfolio.</p>
       </div>
       {leads.length === 0 ? (

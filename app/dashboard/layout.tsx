@@ -45,6 +45,9 @@ export default async function DashboardLayout({
       <Link href="/dashboard/profile" className="btn-ghost px-2 sm:px-3.5">
         Profile
       </Link>
+      <Link href="/dashboard/contacts" className="btn-ghost px-2 sm:px-3.5">
+        Contacts
+      </Link>
       <Link href="/dashboard/generate" className="btn-ghost px-2 sm:px-3.5">
         Generate
       </Link>

@@ -52,6 +52,25 @@ html {
     font-family: var(--font-heading);
     font-weight: 700;
   }
+
+  /* Browsers only give <a href> a pointer cursor by default -- <button>
+     shows the plain arrow unless told otherwise. App-wide fix so every
+     clickable control (buttons, role="button", submit/reset inputs)
+     reads as clickable; disabled controls fall back to not-allowed. */
+  button,
+  [role='button'],
+  input[type='submit'],
+  input[type='button'],
+  input[type='reset'] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role='button'][aria-disabled='true'],
+  input[type='submit']:disabled,
+  input[type='button']:disabled,
+  input[type='reset']:disabled {
+    cursor: not-allowed;
+  }
 }
 
 @layer components {

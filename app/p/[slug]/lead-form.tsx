@@ -5,9 +5,10 @@ import { useState } from 'react';
 // A small interactive island inside an otherwise-cached/static page --
 // submits straight to a same-origin Next.js route handler (never the Nest
 // API directly), which forwards to the public, rate-limited
-// POST /portfolio/:slug/leads endpoint server-to-server.
+// POST /portfolio/:slug/leads endpoint server-to-server. Always rendered
+// expanded (no collapsed toggle) -- it's the page's dedicated closing
+// contact section now, not a floating widget.
 export function LeadForm({ slug }: { slug: string }) {
-  const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<'idle' | 'submitting' | 'sent' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -42,47 +43,42 @@ export function LeadForm({ slug }: { slug: string }) {
 
   if (status === 'sent') {
     return (
-      <div className="card-muted text-sm">
+      <div className="contact-sent">
         <p className="font-medium">Sent!</p>
-        <p className="muted">They&apos;ll be notified and can reach out to you directly.</p>
+        <p className="text-sm muted">They&apos;ll be notified and can reach out to you directly.</p>
       </div>
-    );
-  }
-
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="btn-primary">
-        Interested in discussing an opportunity?
-      </button>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card space-y-3">
-      <div>
-        <p className="font-medium">Get in touch</p>
-        <p className="text-sm muted">Leave your email and they&apos;ll be notified right away.</p>
+    <form onSubmit={handleSubmit} className="contact-form">
+      <div className="contact-field-row">
+        <label className="block">
+          <span className="contact-label">Name</span>
+          <input type="text" name="visitorName" placeholder="Your name" className="contact-input" />
+        </label>
+        <label className="block">
+          <span className="contact-label">Email</span>
+          <input type="email" name="visitorEmail" required placeholder="you@example.com" className="contact-input" />
+        </label>
       </div>
-      <label className="block space-y-1">
-        <span className="text-sm muted">Your email</span>
-        <input type="email" name="visitorEmail" required className="input" />
-      </label>
-      <label className="block space-y-1">
-        <span className="text-sm muted">Your name (optional)</span>
-        <input type="text" name="visitorName" className="input" />
-      </label>
-      <label className="block space-y-1">
-        <span className="text-sm muted">Message (optional)</span>
-        <textarea name="message" rows={3} className="input" />
+      <label className="block">
+        <span className="contact-label">Message (optional)</span>
+        <textarea
+          name="message"
+          rows={4}
+          placeholder="What's the opportunity? Role, timeline, and why you're reaching out."
+          className="contact-input"
+        />
       </label>
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <div className="flex items-center gap-3">
-        <button type="submit" disabled={status === 'submitting'} className="btn-primary">
-          {status === 'submitting' ? 'Sending...' : 'Send'}
+      <div className="contact-send-row">
+        <button type="submit" disabled={status === 'submitting'} className="contact-send-btn">
+          {status === 'submitting' ? '...' : 'Send'}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="link text-sm">
-          Cancel
-        </button>
+        <p className="max-w-[14rem] text-sm muted">
+          No forms into the void -- this reaches their dashboard and inbox directly.
+        </p>
       </div>
     </form>
   );

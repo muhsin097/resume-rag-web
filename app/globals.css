@@ -160,4 +160,113 @@ body {
   .link:hover {
     color: var(--accent-hover);
   }
+
+  .marquee-viewport {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    gap: 1.5rem;
+    animation: marquee-scroll 32s linear infinite;
+  }
+
+  .marquee-viewport:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .marquee-item {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .marquee-item.is-evidenced {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 1.75rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.3rem;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    background: var(--border-color);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+  }
+
+  .timeline-item:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -1.75rem;
+    top: 0.35rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .timeline-item:first-child .timeline-dot {
+    width: 0.85rem;
+    height: 0.85rem;
+    left: -1.825rem;
+    top: 0.3rem;
+  }
+
+  .timeline-card {
+    border-radius: 0.65rem;
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    padding: 0.85rem 1rem;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .timeline-card:hover {
+    border-color: var(--accent);
+    transform: translateX(3px);
+    box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.15);
+  }
 }

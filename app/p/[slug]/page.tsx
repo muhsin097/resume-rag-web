@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getPortfolioData, type PortfolioExperienceItem } from './data';
 import { LeadForm } from './lead-form';
+import { SkillsMarquee } from './skills-marquee';
 
 // Honest date formatting, matching the isCurrent distinction the rest of
 // the app already uses -- isCurrent=false with no endDate means "ended,
@@ -17,7 +18,7 @@ function formatRange(item: PortfolioExperienceItem): string | null {
   return start;
 }
 
-function EntryList({ items }: { items: PortfolioExperienceItem[] }) {
+function EntryList({ items, showDates = true }: { items: PortfolioExperienceItem[]; showDates?: boolean }) {
   return (
     <div className="space-y-4">
       {items.map((item) => (
@@ -27,9 +28,34 @@ function EntryList({ items }: { items: PortfolioExperienceItem[] }) {
               {item.title}
               {item.organization ? ` at ${item.organization}` : ''}
             </p>
-            {formatRange(item) && <p className="text-xs muted">{formatRange(item)}</p>}
+            {showDates && formatRange(item) && <p className="text-xs muted">{formatRange(item)}</p>}
           </div>
           {item.description && <p className="mt-1 text-sm muted whitespace-pre-wrap">{item.description}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Visual timeline for Experience specifically -- the section the user
+// is most likely to scan role-by-role, so a connecting line + dots reads
+// more like a career path than a flat list.
+function Timeline({ items }: { items: PortfolioExperienceItem[] }) {
+  return (
+    <div className="timeline">
+      {items.map((item) => (
+        <div key={item.id} className="timeline-item">
+          <span className="timeline-dot" />
+          <div className="timeline-card">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+              <p className="font-medium">
+                {item.title}
+                {item.organization ? ` at ${item.organization}` : ''}
+              </p>
+              {formatRange(item) && <p className="text-xs muted">{formatRange(item)}</p>}
+            </div>
+            {item.description && <p className="mt-1 text-sm muted whitespace-pre-wrap">{item.description}</p>}
+          </div>
         </div>
       ))}
     </div>
@@ -97,8 +123,14 @@ export default async function PortfolioPage({
       </header>
 
       {profile.skills.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="section-label">Skills</h2>
+        <section className="space-y-3">
+          <div>
+            <h2 className="section-label">Skills</h2>
+            <p className="mt-1 text-xs muted">
+              Highlighted skills were actually used on the job -- the count is how many roles or projects relied on them.
+            </p>
+          </div>
+          <SkillsMarquee skills={profile.skills} />
           <div className="flex flex-wrap gap-2">
             {evidencedSkills.map((skill) => (
               <span
@@ -109,7 +141,8 @@ export default async function PortfolioPage({
               >
                 {skill.title}
                 <span className="text-xs opacity-70">
-                  · {skill.evidenceCount} role{skill.evidenceCount === 1 ? '' : 's'}
+                  {' '}
+                  (used in {skill.evidenceCount} role{skill.evidenceCount === 1 ? '' : 's'})
                 </span>
               </span>
             ))}
@@ -125,14 +158,14 @@ export default async function PortfolioPage({
       {profile.experience.length > 0 && (
         <section className="space-y-2">
           <h2 className="section-label">Experience</h2>
-          <EntryList items={profile.experience} />
+          <Timeline items={profile.experience} />
         </section>
       )}
 
       {profile.projects.length > 0 && (
         <section className="space-y-2">
           <h2 className="section-label">Projects</h2>
-          <EntryList items={profile.projects} />
+          <EntryList items={profile.projects} showDates={false} />
         </section>
       )}
 

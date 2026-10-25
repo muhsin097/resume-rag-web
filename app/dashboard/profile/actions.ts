@@ -59,6 +59,40 @@ export async function createExperienceItem(formData: FormData) {
   await revalidatePortfolioForCurrentUser();
 }
 
+// Unlike create, organization/description are sent even when empty --
+// an edit might be clearing a previously-set value, and omitting a
+// falsy field (fine for create, since there's nothing to clear yet)
+// would silently leave the old value in place here instead.
+export async function updateExperienceItem(id: string, formData: FormData) {
+  const payload: Record<string, string | boolean> = {
+    title: String(formData.get('title') ?? ''),
+    organization: String(formData.get('organization') ?? ''),
+    description: String(formData.get('description') ?? ''),
+  };
+  const startDate = formData.get('startDate');
+  const endDate = formData.get('endDate');
+  const isCurrent = formData.get('isCurrent') === 'on';
+  if (startDate) payload.startDate = String(startDate);
+  // Mutually exclusive with isCurrent, same as create -- the form
+  // disables/clears the end date input when "currently ongoing" is
+  // checked, so this is a defensive guard against ever sending both.
+  if (endDate && !isCurrent) payload.endDate = String(endDate);
+  payload.isCurrent = isCurrent;
+
+  const response = await apiFetch(`/experience-items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.message ?? 'Could not save your changes.');
+  }
+
+  revalidatePath('/dashboard/profile');
+  await revalidatePortfolioForCurrentUser();
+}
+
 // Skills/languages are one-word(ish) facts with no description/org/dates --
 // let the user drop in a whole batch at once instead of repeating the full
 // form per entry. Goes through /experience-items/bulk (one batched Voyage

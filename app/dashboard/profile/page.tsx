@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { apiFetchJson, isApiUnavailable } from '@/lib/api';
 import { ApiDownMessage } from '../../components/api-down';
-import { deleteExperienceItem, setJobSearchEnabled, setProjectHighlighted } from './actions';
+import { deleteExperienceItem, setJobSearchEnabled } from './actions';
 import { ImportResumeSection } from './import-resume-section';
 import { AddExperienceItemForm } from './add-experience-item-form';
 import { AddTagListForm } from './add-tag-list-form';
@@ -10,7 +10,8 @@ import { GettingStartedChecklist } from './getting-started-checklist';
 import { DeleteAccountSection } from './delete-account-section';
 import { CollapsibleSection } from './collapsible-section';
 import { ItemGroup } from './item-group';
-import { TYPE_BADGE_CLASSES, TYPE_BORDER_CLASSES } from './type-colors';
+import { ItemCard, AchievementRow } from './item-card';
+import { TYPE_BADGE_CLASSES } from './type-colors';
 import { LegacyDatesBanner } from './legacy-dates-banner';
 import { PortfolioSection } from './portfolio-section';
 import { PortfolioNudgeBanner } from './portfolio-nudge-banner';
@@ -40,6 +41,7 @@ interface ExperienceItem {
   description: string | null;
   isCurrent: boolean;
   isHighlighted: boolean;
+  startDate: string | null;
   endDate: string | null;
   createdAt: string;
   updatedAt: string;
@@ -132,48 +134,6 @@ function TagSection({
   );
 }
 
-function ItemCard({
-  item,
-}: {
-  item: ExperienceItem;
-}) {
-  return (
-    <li
-      className={`card-muted flex items-start justify-between gap-3 ${TYPE_BORDER_CLASSES[item.type]}`}
-    >
-      <div className="min-w-0">
-        <p className="font-medium">
-          {item.title}
-          {item.organization ? ` at ${item.organization}` : ''}
-          {item.isHighlighted && (
-            <span
-              className="chip ml-2"
-              style={{ background: 'var(--accent-soft)', borderColor: 'var(--accent)', color: 'var(--accent)' }}
-            >
-              Featured
-            </span>
-          )}
-        </p>
-        {item.description && <p className="text-sm muted">{item.description}</p>}
-      </div>
-      <div className="flex shrink-0 items-center gap-3">
-        {item.type === 'PROJECT' && (
-          <form action={setProjectHighlighted.bind(null, item.id, !item.isHighlighted)}>
-            <button type="submit" className="text-sm link whitespace-nowrap">
-              {item.isHighlighted ? 'Unfeature' : 'Feature on portfolio'}
-            </button>
-          </form>
-        )}
-        <form action={deleteExperienceItem.bind(null, item.id)}>
-          <button type="submit" className="text-sm text-red-600 hover:underline">
-            Delete
-          </button>
-        </form>
-      </div>
-    </li>
-  );
-}
-
 // All achievements in one card as compact rows, rather than a full
 // card-per-item like ItemCard -- achievements tend to be short one-liners,
 // so a card each wastes far more space than it's worth.
@@ -181,20 +141,7 @@ function AchievementsCard({ items }: { items: ExperienceItem[] }) {
   return (
     <ul className="card-muted divide-y" style={{ borderColor: 'var(--border-color)' }}>
       {items.map((item) => (
-        <li
-          key={item.id}
-          className="flex items-start justify-between gap-2 py-2 first:pt-0 last:pb-0"
-        >
-          <div>
-            <p className="text-sm font-medium">{item.title}</p>
-            {item.description && <p className="text-xs muted">{item.description}</p>}
-          </div>
-          <form action={deleteExperienceItem.bind(null, item.id)}>
-            <button type="submit" className="text-xs text-red-600 hover:underline">
-              Delete
-            </button>
-          </form>
-        </li>
+        <AchievementRow key={item.id} item={item} />
       ))}
     </ul>
   );

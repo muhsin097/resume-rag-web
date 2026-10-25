@@ -43,5 +43,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.2,
     },
+    {
+      url: `${SITE_URL}/compare`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    // Pricing/features in these change over time on the competitor's side,
+    // not ours -- monthly is a reasonable cadence to signal they're worth
+    // a recrawl without claiming they update more often than they do.
+    ...['rezi', 'teal', 'kickresume', 'enhancv', 'jobscan'].map((slug) => ({
+      url: `${SITE_URL}/compare/${slug}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
   ];
 }

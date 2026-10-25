@@ -141,6 +141,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    // Mirrors the candidate 'verify-email' provider above -- recruiters
+    // now go through the same OTP step before register() hands back a
+    // real session (see recruiter-auth.service.ts).
+    Credentials({
+      id: 'recruiter-verify-email',
+      credentials: {
+        email: { label: 'Email' },
+        code: { label: 'Code' },
+      },
+      authorize: async (credentials) => {
+        const response = await fetch(
+          `${process.env.RESUME_API_BASE_URL}/recruiter-auth/verify-email`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials?.email,
+              code: credentials?.code,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const data = await response.json();
+        return {
+          id: data.recruiter.id,
+          email: data.recruiter.email,
+          name: data.recruiter.name,
+          accessToken: data.accessToken,
+          kind: 'recruiter',
+        };
+      },
+    }),
     Google({
       id: 'google-candidate',
       clientId: process.env.GOOGLE_CLIENT_ID,

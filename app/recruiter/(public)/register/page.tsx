@@ -1,6 +1,5 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Brand } from '../../../components/brand';
@@ -33,9 +32,12 @@ export default function RecruiterRegisterPage() {
       return;
     }
 
-    await signIn('recruiter', { email, password, redirect: false });
+    // Account now exists, but can't log in yet -- it's unverified until
+    // the OTP emailed to them is entered, so there's no session to start
+    // here. Same reasoning as the candidate register page; see
+    // recruiter-auth.service.ts.
     setSubmitting(false);
-    router.push('/recruiter/search');
+    router.push(`/recruiter/verify-email?email=${encodeURIComponent(email)}`);
   }
 
   return (

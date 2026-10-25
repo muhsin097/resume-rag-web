@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { deleteExperienceItem, setProjectHighlighted, updateExperienceItem } from './actions';
 import { TYPE_BORDER_CLASSES } from './type-colors';
+import { formatRange } from '@/lib/format-range';
 
 // Widened to match the full type union used elsewhere on the profile
 // page, even though ItemCard/AchievementRow are only ever rendered for
@@ -32,15 +33,6 @@ function showOrganization(type: ExperienceType): boolean {
 // Dates don't apply to a single-fact achievement entry.
 function showDates(type: ExperienceType): boolean {
   return type !== 'ACHIEVEMENT';
-}
-
-function formatRange(item: ExperienceItemData): string | null {
-  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
-  if (!item.startDate && !item.endDate && !item.isCurrent) return null;
-  const start = item.startDate ? fmt(item.startDate) : '?';
-  if (item.isCurrent) return `${start} – Present`;
-  if (item.endDate) return `${start} – ${fmt(item.endDate)}`;
-  return start;
 }
 
 function toDateInputValue(iso: string | null): string {

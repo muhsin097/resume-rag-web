@@ -7,6 +7,7 @@ import { LeadForm } from './lead-form';
 import { SkillsMarquee } from './skills-marquee';
 import { Reveal } from './reveal';
 import { HeroIllustration } from '../../components/hero-illustration';
+import { formatRange } from '@/lib/format-range';
 
 // Section copy is static/editorial, not derived from the candidate's
 // data -- only which sections appear (and their running number) depends
@@ -51,18 +52,6 @@ function SectionIntro({ number, section, blurb }: { number: string; section: Sec
   );
 }
 
-// Honest date formatting, matching the isCurrent distinction the rest of
-// the app already uses -- isCurrent=false with no endDate means "ended,
-// date just not known," never silently rendered as "Present" (the old
-// ambiguous behavior this whole app moved away from).
-function formatRange(item: PortfolioExperienceItem): string | null {
-  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
-  if (!item.startDate && !item.endDate && !item.isCurrent) return null;
-  const start = item.startDate ? fmt(item.startDate) : '?';
-  if (item.isCurrent) return `${start} – Present`;
-  if (item.endDate) return `${start} – ${fmt(item.endDate)}`;
-  return start;
-}
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);

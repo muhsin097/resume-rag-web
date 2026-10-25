@@ -2,19 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { enablePortfolioQuickstart } from './actions';
-
-// Kept in sync with the identical helper in portfolio-section.tsx --
-// not shared because each file's version is tiny and the two components
-// never need to agree on anything beyond "a reasonable URL-safe guess".
-function suggestSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 40);
-}
+import { suggestSlug } from '@/lib/suggest-slug';
 
 const DISMISS_KEY = 'portfolio-nudge-dismissed';
 

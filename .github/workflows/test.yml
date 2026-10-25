@@ -1,0 +1,30 @@
+name: Test
+
+# This repo deploys via Vercel's own GitHub integration, independent of
+# GitHub Actions -- this workflow does NOT gate that deploy (unlike
+# resume-rag-api, where a GH Actions `deploy` job does the SSH/redeploy
+# itself and can depend on `test` passing first). This is a visible
+# status check only, catching a regression even though it won't
+# currently block Vercel from shipping one anyway.
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc --noEmit -p .
+      # `npm run lint` is deliberately NOT run here yet -- it currently
+      # has 5 pre-existing failures (react-hooks/set-state-in-effect in
+      # files this change didn't touch), unrelated to the test suite.
+      # Adding it now would make this check red from its very first run
+      # over something out of scope here.

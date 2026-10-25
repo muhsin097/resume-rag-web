@@ -2,18 +2,9 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { setPortfolioEnabled, updatePortfolioSlug, type PortfolioSlugState } from './actions';
+import { suggestSlug } from '@/lib/suggest-slug';
 
 const SITE_URL = 'https://ceasetoresume.online';
-
-function suggestSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 40);
-}
 
 export function PortfolioSection({
   name,

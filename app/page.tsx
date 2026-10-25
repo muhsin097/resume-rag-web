@@ -122,6 +122,14 @@ const WEBAPP_JSON_LD = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 };
 
+const COMPARE_LINKS = [
+  { slug: 'rezi', name: 'Rezi' },
+  { slug: 'teal', name: 'Teal' },
+  { slug: 'kickresume', name: 'Kickresume' },
+  { slug: 'enhancv', name: 'Enhancv' },
+  { slug: 'jobscan', name: 'Jobscan' },
+] as const;
+
 const STEPS = [
   {
     title: 'Build your profile',
@@ -262,6 +270,21 @@ export default async function Home() {
               </summary>
               <p className="mt-3 text-sm muted">{faq.answer}</p>
             </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
+        <h2 className="font-semibold">Comparing your options?</h2>
+        <p className="mx-auto mt-2 max-w-xl text-sm muted">
+          Real pricing, real features, nothing glossed over -- see exactly how Cease to Resume stacks up
+          against other resume tools.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          {COMPARE_LINKS.map((c) => (
+            <Link key={c.slug} href={`/compare/${c.slug}`} className="chip transition-colors hover:border-[var(--accent)]">
+              vs {c.name}
+            </Link>
           ))}
         </div>
       </section>

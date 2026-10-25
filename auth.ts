@@ -5,14 +5,22 @@ import Google from 'next-auth/providers/google';
 // Both Google providers below exchange a verified Google identity for our
 // own JWT via this same backend call -- the only difference is which
 // Nest endpoint (and therefore which persona's table) it hits.
+//
+// Forwards the actual Google ID token, not just the {email, name} NextAuth
+// parsed out of it -- the backend now verifies that token itself
+// (signature, audience, issuer, expiry, verified email) and derives
+// email/name from ITS OWN verified payload, never from client-supplied
+// fields. The old version just POSTed {email, name} with no proof at
+// all: reproduced locally, a plain POST with any existing user's email
+// returned a real access token, no Google involvement whatsoever.
 async function exchangeGoogleProfileForToken(
   endpoint: '/auth/oauth' | '/recruiter-auth/oauth',
-  profile: { email?: string | null; name?: string | null },
+  idToken: string,
 ) {
   const response = await fetch(`${process.env.RESUME_API_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: profile.email, name: profile.name }),
+    body: JSON.stringify({ idToken }),
   });
   if (!response.ok) {
     throw new Error('Could not complete Google sign-in.');
@@ -137,8 +145,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       id: 'google-candidate',
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      profile: async (profile) => {
-        const data = await exchangeGoogleProfileForToken('/auth/oauth', profile);
+      profile: async (_profile, tokens) => {
+        if (!tokens.id_token) {
+          throw new Error('Google sign-in did not return an ID token.');
+        }
+        const data = await exchangeGoogleProfileForToken('/auth/oauth', tokens.id_token);
         return {
           id: data.user.id,
           email: data.user.email,
@@ -152,8 +163,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       id: 'google-recruiter',
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      profile: async (profile) => {
-        const data = await exchangeGoogleProfileForToken('/recruiter-auth/oauth', profile);
+      profile: async (_profile, tokens) => {
+        if (!tokens.id_token) {
+          throw new Error('Google sign-in did not return an ID token.');
+        }
+        const data = await exchangeGoogleProfileForToken('/recruiter-auth/oauth', tokens.id_token);
         return {
           id: data.recruiter.id,
           email: data.recruiter.email,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -46,8 +46,16 @@ export function ImportResumeSection() {
   // review UI -- the top nav isn't obvious as "the next step", so point
   // people at Generate directly.
   const [justSaved, setJustSaved] = useState(false);
+  const [prevExtractState, setPrevExtractState] = useState(extractState);
 
-  useEffect(() => {
+  // extractState.items and .contactInfo always change together -- they're
+  // two fields of the same object useActionState returns once a fresh
+  // extractResumeItems() submission resolves, so comparing the object
+  // reference covers both. Compared during render rather than in an
+  // effect so the review UI reflects the new extraction on the very next
+  // paint instead of one render late.
+  if (extractState !== prevExtractState) {
+    setPrevExtractState(extractState);
     if (extractState.items) {
       setJustSaved(false);
       setFacts(
@@ -73,7 +81,7 @@ export function ImportResumeSection() {
       setEditingLanguages(false);
       setEditingFacts(false);
     }
-  }, [extractState.items, extractState.contactInfo]);
+  }
 
   function updateFact(index: number, patch: Partial<ExtractedItem>) {
     setFacts((current) =>

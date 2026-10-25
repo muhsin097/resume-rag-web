@@ -18,6 +18,10 @@ export function PortfolioNudgeBanner({ name }: { name: string }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Syncing from localStorage, only available post-mount -- no SSR-safe
+    // render-time alternative for a browser-only API. See the matching
+    // justification on stats-counter.tsx's matchMedia check.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(localStorage.getItem(DISMISS_KEY) !== 'true');
   }, []);
 

@@ -30,8 +30,4 @@ jobs:
       # directory, so this step is required first, not optional.
       - run: npx next typegen
       - run: npx tsc --noEmit -p .
-      # `npm run lint` is deliberately NOT run here yet -- it currently
-      # has 5 pre-existing failures (react-hooks/set-state-in-effect in
-      # files this change didn't touch), unrelated to the test suite.
-      # Adding it now would make this check red from its very first run
-      # over something out of scope here.
+      - run: npm run lint

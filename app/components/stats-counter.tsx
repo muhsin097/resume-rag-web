@@ -20,6 +20,11 @@ function useCountUp(target: number, durationMs = 1200) {
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Syncing from a browser API only available post-mount -- no
+      // SSR-safe render-time alternative, unlike the "derive state from a
+      // changing prop" cases elsewhere in this app that got refactored
+      // away from an effect instead of suppressed.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValue(target);
       return;
     }

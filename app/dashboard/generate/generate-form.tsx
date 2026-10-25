@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState, useTransition } from 'react';
+import { useActionState, useState, useTransition } from 'react';
 import { generateResume, addSkillsToResume, rescoreResume, type Generation } from './actions';
 import { highlightKeywords } from './highlight-keywords';
 import { MissingKeywordsPanel, type StagedSkill } from './missing-keywords-panel';
@@ -36,8 +36,14 @@ export function GenerateForm() {
   const [rescoreError, setRescoreError] = useState<string | null>(null);
   const [isAddingSkills, startAddingSkills] = useTransition();
   const [isRescoring, startRescoring] = useTransition();
+  const [prevStateGeneration, setPrevStateGeneration] = useState(state.generation);
 
-  useEffect(() => {
+  // state.generation only changes when a fresh generateResume() submission
+  // completes -- reset the local working copy then. Compared during
+  // render rather than in an effect so this doesn't cost an extra render
+  // before the UI reflects the new generation.
+  if (state.generation !== prevStateGeneration) {
+    setPrevStateGeneration(state.generation);
     if (state.generation) {
       setGeneration(state.generation);
       setRecentlyAddedSkills([]);
@@ -45,7 +51,7 @@ export function GenerateForm() {
       setAddSkillsError(null);
       setRescoreError(null);
     }
-  }, [state.generation]);
+  }
 
   function handleAddKeywords(skills: StagedSkill[]) {
     if (!generation) return;

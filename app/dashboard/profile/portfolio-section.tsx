@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { setPortfolioEnabled, updatePortfolioSlug, type PortfolioSlugState } from './actions';
 import { suggestSlug } from '@/lib/suggest-slug';
 
@@ -21,13 +21,17 @@ export function PortfolioSection({
   );
   const [editingSlug, setEditingSlug] = useState(!portfolioSlug);
   const [copied, setCopied] = useState(false);
+  const [prevSlugSuccess, setPrevSlugSuccess] = useState(slugState.success);
 
   // A successful save re-renders this component with a fresh
   // portfolioSlug prop (the action's revalidatePath re-runs the Server
   // Component tree) -- switch back to the display view once that lands.
-  useEffect(() => {
+  // Compared during render rather than in an effect so the correct view
+  // shows on the very next paint instead of one render late.
+  if (slugState.success !== prevSlugSuccess) {
+    setPrevSlugSuccess(slugState.success);
     if (slugState.success) setEditingSlug(false);
-  }, [slugState.success]);
+  }
 
   const url = portfolioSlug ? `${SITE_URL}/p/${portfolioSlug}` : null;
 
